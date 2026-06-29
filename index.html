@@ -124,6 +124,17 @@
   .sug-tipo{flex:0 0 auto;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);}
   .count{margin:14px 0 22px;font-size:13px;color:var(--muted);}
 
+  /* Filtros */
+  .filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0 0;}
+  .filter-chip{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500;padding:7px 13px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--muted);cursor:pointer;white-space:nowrap;}
+  .filter-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--grey-dot);}
+  .filter-chip[data-estado="recibiendo"] .dot{background:var(--green);}
+  .filter-chip[data-estado="completo"] .dot{background:var(--amber);}
+  .filter-chip.active{background:var(--navy);color:var(--cream);border-color:var(--navy);}
+  .filter-chip.active .dot{background:var(--cream);}
+  .filter-select{font-size:13.5px;font-weight:500;padding:7px 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);cursor:pointer;}
+  .filter-reset{font-size:13px;font-weight:500;color:var(--navy);background:none;border:none;padding:7px 4px;cursor:pointer;text-decoration:underline;}
+
   .config-warn{background:#FFF7E8;border:1px solid #F0DEC4;border-radius:var(--radius);padding:14px 16px;margin:0 0 18px;font-size:13.5px;color:#5C3A0E;max-width:640px;}
   .config-warn b{color:var(--amber);}
   .config-warn code{background:#fff;border:1px solid #F0DEC4;border-radius:5px;padding:1px 5px;font-size:12.5px;}
@@ -283,6 +294,15 @@
     </div>
     <div class="suggestions" id="suggestions" role="listbox"></div>
   </div>
+  <div class="filters" id="filters">
+    <button type="button" class="filter-chip" data-estado="recibiendo"><span class="dot"></span>Recibiendo</button>
+    <button type="button" class="filter-chip" data-estado="completo"><span class="dot"></span>Completo</button>
+    <button type="button" class="filter-chip" data-estado="pausado"><span class="dot"></span>Pausado</button>
+    <select class="filter-select" id="provinciaSelect" aria-label="Filtrar por provincia">
+      <option value="">Todas las provincias</option>
+    </select>
+    <button type="button" class="filter-reset" id="resetFilters" style="display:none;">Quitar filtros</button>
+  </div>
   <div class="count" id="count"></div>
 
   <div id="configWarn"></div>
@@ -384,6 +404,9 @@ const sb = CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) :
 const SITE_URL = (location.origin && location.origin.startsWith('http')) ? location.origin + location.pathname : 'https://tu-sitio.netlify.app';
 
 let PUNTOS = [];
+let filtroEstado = null;
+let filtroProvincia = '';
+const ORDEN_ESTADO = {recibiendo:0, completo:1, pausado:2};
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
@@ -487,15 +510,38 @@ async function cargar(){
   const { data, error } = await sb.from('puntos_publicos').select('*')
     .order('verificado', {ascending:false}).order('updated_at', {ascending:false});
   if(error){ console.error(error); $('heroStatus').textContent='No se pudo cargar'; $('list').innerHTML = `<div class="state"><h3>No se pudo cargar el listado</h3><p>Revisa la conexión con Supabase y las políticas RLS.</p></div>`; return; }
-  PUNTOS = data || [];
+  PUNTOS = (data || []).sort((a, b) => {
+    const eo = (ORDEN_ESTADO[a.estado] ?? 1) - (ORDEN_ESTADO[b.estado] ?? 1);
+    if(eo) return eo;
+    if(a.verificado !== b.verificado) return a.verificado ? -1 : 1;
+    return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+  });
   setHeroStatus();
+  poblarProvincias();
   aplicarFiltro();
+}
+
+function poblarProvincias(){
+  const sel = $('provinciaSelect');
+  const actuales = new Set(Array.from(sel.options).slice(1).map(o => o.value));
+  const provincias = Array.from(new Set(PUNTOS.map(p => p.provincia).filter(Boolean))).sort((a,b) => a.localeCompare(b, 'es'));
+  if(provincias.length === actuales.size && provincias.every(p => actuales.has(p))) return;
+  sel.innerHTML = '<option value="">Todas las provincias</option>' + provincias.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+  sel.value = filtroProvincia;
+}
+
+function actualizarResetVisible(){
+  const q = $('searchInput').value;
+  $('resetFilters').style.display = (filtroEstado || filtroProvincia || q) ? '' : 'none';
 }
 
 function aplicarFiltro(){
   const q = norm($('searchInput').value);
-  if(!q){ render(PUNTOS); return; }
-  const f = PUNTOS.filter(p => norm([p.nombre,p.ciudad,p.provincia,p.necesidades,p.direccion].filter(Boolean).join(' ')).includes(q));
+  let f = PUNTOS;
+  if(filtroEstado) f = f.filter(p => p.estado === filtroEstado);
+  if(filtroProvincia) f = f.filter(p => p.provincia === filtroProvincia);
+  if(q) f = f.filter(p => norm([p.nombre,p.ciudad,p.provincia,p.necesidades,p.direccion].filter(Boolean).join(' ')).includes(q));
+  actualizarResetVisible();
   render(f);
 }
 
@@ -537,6 +583,24 @@ $('searchInput').addEventListener('keydown', (e) => {
 });
 $('suggestions').addEventListener('mousedown', (e) => { const it = e.target.closest('.sug-item'); if(it){ e.preventDefault(); pickSuggestion(+it.dataset.i); } });
 document.addEventListener('click', (e) => { if(!e.target.closest('.search-wrap')) closeSuggestions(); });
+
+/* ---------- Filtros ---------- */
+$('filters').addEventListener('click', (e) => {
+  const chip = e.target.closest('.filter-chip');
+  if(!chip) return;
+  const estado = chip.dataset.estado;
+  filtroEstado = (filtroEstado === estado) ? null : estado;
+  $('filters').querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.estado === filtroEstado));
+  aplicarFiltro();
+});
+$('provinciaSelect').addEventListener('change', () => { filtroProvincia = $('provinciaSelect').value; aplicarFiltro(); });
+$('resetFilters').addEventListener('click', () => {
+  filtroEstado = null; filtroProvincia = '';
+  $('searchInput').value = '';
+  $('provinciaSelect').value = '';
+  $('filters').querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  aplicarFiltro();
+});
 
 /* ---------- Overlays ---------- */
 function openOverlay(id){ $(id).classList.add('open'); document.body.style.overflow='hidden'; }
