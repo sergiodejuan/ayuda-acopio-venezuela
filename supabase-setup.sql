@@ -17,12 +17,16 @@ create table if not exists public.puntos_acopio (
   estado       text not null default 'recibiendo'
                  check (estado in ('recibiendo','completo','pausado')),
   verificado   boolean not null default false, -- lo activas tú al revisar
+  oficial      boolean not null default false, -- punto institucional/oficial, gestionado solo por el administrador
   edit_token   text not null,                  -- código privado de gestión
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
 );
 
-create index if not exists idx_puntos_orden on public.puntos_acopio (verificado desc, updated_at desc);
+create index if not exists idx_puntos_orden on public.puntos_acopio (oficial desc, verificado desc, updated_at desc);
+
+-- Si la tabla ya existía antes de añadir "oficial", ejecuta también:
+-- alter table public.puntos_acopio add column if not exists oficial boolean not null default false;
 
 -- 2) RLS: la tabla NO es legible directamente (así el token queda oculto)
 alter table public.puntos_acopio enable row level security;
@@ -40,7 +44,7 @@ grant insert on public.puntos_acopio to anon, authenticated;
 -- 3) VISTA PÚBLICA: lectura sin exponer edit_token ---------------------
 create or replace view public.puntos_publicos as
   select id, nombre, direccion, ciudad, provincia, contacto, whatsapp,
-         horario, necesidades, estado, verificado, created_at, updated_at
+         horario, necesidades, estado, verificado, oficial, created_at, updated_at
   from public.puntos_acopio;
 
 grant select on public.puntos_publicos to anon, authenticated;
@@ -104,5 +108,19 @@ grant execute on function public.actualizar_punto(text,text,text,text,text,text)
 -- =====================================================================
 --  MODERACIÓN (desde el panel de Supabase -> Table editor)
 --  · Verificar un punto:   update puntos_acopio set verificado = true where id = '...';
+--  · Marcar como oficial:  update puntos_acopio set oficial = true, verificado = true where id = '...';
 --  · Eliminar spam:        delete from puntos_acopio where id = '...';
 -- =====================================================================
+
+-- =====================================================================
+--  PLANTILLA: alta de un punto oficial
+--  Los puntos oficiales se publican siempre verificados y con oficial=true,
+--  y aparecen por encima del resto en el listado. Genera un edit_token
+--  único (p.ej. con gen_random_uuid()::text) para poder actualizarlos.
+-- =====================================================================
+-- insert into public.puntos_acopio
+--   (nombre, direccion, ciudad, provincia, contacto, whatsapp, horario, necesidades, estado, verificado, oficial, edit_token)
+-- values
+--   ('Nombre del punto oficial', 'Dirección completa', 'Ciudad', 'Provincia',
+--    '+34 600 000 000', '34600000000', 'Horario de atención',
+--    'Qué se necesita actualmente', 'recibiendo', true, true, gen_random_uuid()::text);
