@@ -170,6 +170,8 @@
   .b-pausado{background:#F0F0EE;color:var(--muted);} .b-pausado .dot{background:var(--grey-dot);}
   .b-verif{background:#EAF0F7;color:var(--navy);} .b-verif svg{width:12px;height:12px;}
   .b-sinverif{background:#F0F0EE;color:var(--faint);}
+  .b-oficial{background:#FFF4DC;color:#9A6B00;} .b-oficial svg{width:12px;height:12px;}
+  .card-oficial{border-color:#F0C75E;box-shadow:0 0 0 1px #F0C75E inset, var(--shadow);}
 
   .needs{margin:13px 0;padding:12px 14px;background:var(--amber-soft);border-radius:var(--radius-sm);border:1px solid #F0DEC4;}
   .needs-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);margin-bottom:3px;}
@@ -243,6 +245,7 @@
   .legal strong{color:var(--muted);}
   .credit{font-size:13.5px;color:var(--ink);font-weight:500;margin:0 0 12px;}
   .credit strong{color:var(--ink);font-weight:600;}
+  .contact-link{background:none;border:none;padding:0;font:inherit;font-weight:600;color:var(--navy);text-decoration:underline;cursor:pointer;}
 
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto;}
@@ -346,6 +349,7 @@
       <p class="credit">Creado y mantenido por <strong>Sergio de Juan González</strong></p>
       <p><strong>Iniciativa ciudadana sin ánimo de lucro.</strong> Sin afiliación oficial con instituciones públicas, ONG ni administraciones. A través de esta web <strong>no se recauda dinero ni se gestionan donaciones económicas</strong>; únicamente se listan lugares físicos de recogida.</p>
       <p>Solo se almacenan los datos del establecimiento que cada punto decide publicar. No se recogen datos de las personas donantes. Para corregir o eliminar un punto, usa la opción «Actualizar mi punto» o escribe a la persona responsable que lo publicó.</p>
+      <p>¿Sugerencias, un error en la página o cualquier otra consulta? <button type="button" class="contact-link" id="contactEmail">Escríbeme</button></p>
       <p>© 2026 · Hecho de forma solidaria. El contenido puede compartirse y reutilizarse libremente con fines de ayuda humanitaria.</p>
     </div>
   </div>
@@ -536,11 +540,14 @@ function cardHTML(p){
   const verif = p.verificado
     ? `<span class="badge b-verif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Verificado</span>`
     : `<span class="badge b-sinverif">Sin verificar</span>`;
+  const oficial = p.oficial
+    ? `<span class="badge b-oficial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 6.6 7 .5-5.4 4.5 1.9 6.9L12 16.9 5.9 20.5l1.9-6.9-5.4-4.5 7-.5z"/></svg>Punto oficial</span>`
+    : '';
   return `
-  <article class="card">
+  <article class="card ${p.oficial ? 'card-oficial' : ''}">
     <div class="card-head">
       <h3 class="card-name">${esc(p.nombre)}</h3>
-      <div class="badges">${estadoBadge(p.estado)}${verif}</div>
+      <div class="badges">${oficial}${estadoBadge(p.estado)}${verif}</div>
     </div>
     ${p.necesidades ? `<div class="needs"><div class="needs-label">Hace falta ahora</div><div class="needs-text">${esc(p.necesidades)}</div></div>` : ''}
     <div class="meta">
@@ -594,9 +601,10 @@ function render(items){
 async function cargar(){
   if(!CONFIGURED){ setHeroStatus(); render([]); return; }
   const { data, error } = await sb.from('puntos_publicos').select('*')
-    .order('verificado', {ascending:false}).order('updated_at', {ascending:false});
+    .order('oficial', {ascending:false}).order('verificado', {ascending:false}).order('updated_at', {ascending:false});
   if(error){ console.error(error); $('heroStatus').textContent='No se pudo cargar'; $('list').innerHTML = `<div class="state"><h3>No se pudo cargar el listado</h3><p>Revisa la conexión con Supabase y las políticas RLS.</p></div>`; return; }
   PUNTOS = (data || []).sort((a, b) => {
+    if(a.oficial !== b.oficial) return a.oficial ? -1 : 1;
     const eo = (ORDEN_ESTADO[a.estado] ?? 1) - (ORDEN_ESTADO[b.estado] ?? 1);
     if(eo) return eo;
     if(a.verificado !== b.verificado) return a.verificado ? -1 : 1;
@@ -696,6 +704,13 @@ document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e
 $('openRegister').addEventListener('click', () => { $('regForm').style.display='block'; $('regSuccess').style.display='none'; $('regMsg').innerHTML=''; openOverlay('registerOverlay'); });
 $('openUpdate').addEventListener('click', () => { $('updStep1').style.display='block'; $('updStep2').style.display='none'; $('updMsg1').innerHTML=''; $('updMsg2').innerHTML=''; $('u_token').value=''; openOverlay('updateOverlay'); });
 $('openOfficial').addEventListener('click', () => openOverlay('officialOverlay'));
+
+/* ---------- Contacto (ofuscado contra bots de spam) ---------- */
+$('contactEmail').addEventListener('click', () => {
+  const u = ['s','e','r','g','i','o','d','j','g','m'].join('');
+  const d = ['g','m','a','i','l','.','c','o','m'].join('');
+  location.href = 'mailto:' + u + '@' + d + '?subject=' + encodeURIComponent('Ayuda Acopio Venezuela');
+});
 
 /* ---------- App bar sólida al hacer scroll ---------- */
 const appbar = $('appbar');
