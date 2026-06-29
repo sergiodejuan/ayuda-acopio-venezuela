@@ -63,9 +63,25 @@
   .brand-text{display:flex;flex-direction:column;line-height:1.04;}
   .brand-name{font-family:'Space Grotesk';font-weight:700;font-size:14px;letter-spacing:.09em;text-transform:uppercase;}
   .brand-sub{font-size:10.5px;opacity:.72;letter-spacing:.02em;}
+  .header-actions{display:flex;align-items:center;gap:8px;}
   .share-top{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:var(--wa);color:#fff;border:none;border-radius:999px;font-weight:600;font-size:12.5px;padding:8px 13px;text-decoration:none;}
   .share-top:hover{background:var(--wa-dark);}
   .share-top svg{width:14px;height:14px;}
+  .hbtn-official{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:inherit;border:1px solid rgba(255,255,255,.35);border-radius:999px;font-weight:600;font-size:12.5px;padding:8px 13px;}
+  .hbtn-official svg{width:14px;height:14px;}
+  .appbar.solid .hbtn-official{background:var(--surface);border-color:var(--line-strong);color:var(--navy);}
+  .hbtn-official:hover{background:rgba(255,255,255,.22);}
+  .appbar.solid .hbtn-official:hover{background:var(--amber-soft);}
+
+  /* Modal de canales oficiales */
+  .official-list{display:flex;flex-direction:column;gap:12px;margin-top:6px;}
+  .official-item{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 15px;}
+  .official-item h3{font-family:'Inter',system-ui,sans-serif;font-size:14.5px;font-weight:600;margin:0 0 4px;color:var(--ink);}
+  .official-item p{font-size:13.5px;color:var(--muted);margin:0 0 7px;line-height:1.5;}
+  .official-contacts{display:flex;flex-wrap:wrap;gap:8px;}
+  .official-contacts a{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--navy);background:#EAF0F7;border-radius:999px;padding:6px 11px;text-decoration:none;}
+  .official-contacts a:hover{background:#DCE6F1;}
+  .official-note{font-size:12.5px;color:var(--faint);margin:14px 0 0;line-height:1.5;}
 
   /* ---------------- Hero a pantalla completa ---------------- */
   .hero{
@@ -246,10 +262,16 @@
         <span class="brand-sub">Ayuda a Venezuela · España</span>
       </span>
     </a>
-    <a class="share-top" id="sharePlatform" href="#" aria-label="Compartir esta lista por WhatsApp">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.69-6.16a11.87 11.87 0 01-1.6-5.95C.16 5.34 5.5 0 12.06 0a11.8 11.8 0 018.4 3.49 11.78 11.78 0 013.48 8.4c0 6.55-5.34 11.89-11.9 11.89a11.9 11.9 0 01-5.68-1.45L.06 24zm6.6-3.8c1.68.99 3.28 1.59 5.4 1.59 5.45 0 9.9-4.43 9.9-9.89A9.86 9.86 0 0012.06 2 9.9 9.9 0 002.16 11.9c0 2.22.65 3.88 1.74 5.62l-1 3.66 3.76-.98z"/></svg>
-      Compartir esta lista
-    </a>
+    <div class="header-actions">
+      <button class="hbtn-official" id="openOfficial" type="button" aria-label="Canales oficiales de contacto en España">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L3 7v2c0 6 4 9 9 13 5-4 9-7 9-13V7l-9-5Z"/><path d="M9 12l2 2 4-4"/></svg>
+        Canales oficiales
+      </button>
+      <a class="share-top" id="sharePlatform" href="#" aria-label="Compartir esta lista por WhatsApp">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.69-6.16a11.87 11.87 0 01-1.6-5.95C.16 5.34 5.5 0 12.06 0a11.8 11.8 0 018.4 3.49 11.78 11.78 0 013.48 8.4c0 6.55-5.34 11.89-11.9 11.89a11.9 11.9 0 01-5.68-1.45L.06 24zm6.6-3.8c1.68.99 3.28 1.59 5.4 1.59 5.45 0 9.9-4.43 9.9-9.89A9.86 9.86 0 0012.06 2 9.9 9.9 0 002.16 11.9c0 2.22.65 3.88 1.74 5.62l-1 3.66 3.76-.98z"/></svg>
+        Compartir esta lista
+      </a>
+    </div>
   </div>
 </div>
 
@@ -359,6 +381,70 @@
       </div>
       <button class="btn panel-submit" data-close style="margin-top:14px;">Hecho</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ CANALES OFICIALES ============ -->
+<div class="overlay" id="officialOverlay" role="dialog" aria-modal="true" aria-labelledby="offTitle">
+  <div class="panel">
+    <div class="panel-head"><h2 id="offTitle">Canales oficiales en España</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <p class="panel-sub">Este directorio es una iniciativa ciudadana. Para gestiones oficiales, asistencia consular o ayuda institucional, usa estos canales verificados.</p>
+    <div class="official-list">
+      <div class="official-item">
+        <h3>Emergencias generales (España)</h3>
+        <p>Número único de emergencias, gratuito y operativo 24 horas.</p>
+        <div class="official-contacts"><a href="tel:112">112</a></div>
+      </div>
+      <div class="official-item">
+        <h3>Emergencia consular · Ministerio de Asuntos Exteriores</h3>
+        <p>Para españoles en el extranjero o gestiones consulares urgentes relacionadas con Venezuela.</p>
+        <div class="official-contacts">
+          <a href="tel:+34910001249">+34 91 000 1249 (desde España)</a>
+          <a href="tel:+584242090264">+58 424 209 0264 (desde Venezuela)</a>
+        </div>
+      </div>
+      <div class="official-item">
+        <h3>Embajada de España en Caracas</h3>
+        <p>Atención a ciudadanos españoles en Venezuela.</p>
+        <div class="official-contacts">
+          <a href="tel:+582126270300">+58 212 627 03 00</a>
+          <a href="mailto:emb.caracas@maec.es">emb.caracas@maec.es</a>
+        </div>
+      </div>
+      <div class="official-item">
+        <h3>Embajada de Venezuela en Madrid</h3>
+        <p>Trámites consulares para ciudadanos venezolanos residentes en España.</p>
+        <div class="official-contacts">
+          <a href="tel:+34915981200">+34 91 598 12 00</a>
+          <a href="mailto:embve.esmdr@mppre.gob.ve">embve.esmdr@mppre.gob.ve</a>
+        </div>
+      </div>
+      <div class="official-item">
+        <h3>Consulado General de Venezuela en Barcelona</h3>
+        <p>Trámites y emergencias consulares para la comunidad venezolana en Cataluña.</p>
+        <div class="official-contacts">
+          <a href="tel:+34933427155">+34 933 42 71 55</a>
+          <a href="tel:+34650285759">+34 650 28 57 59 (emergencias)</a>
+        </div>
+      </div>
+      <div class="official-item">
+        <h3>Cruz Roja Española</h3>
+        <p>Información, ayuda humanitaria y donaciones a través de su red nacional.</p>
+        <div class="official-contacts">
+          <a href="tel:900221122">900 22 11 22 (gratuito)</a>
+          <a href="mailto:informa@cruzroja.es">informa@cruzroja.es</a>
+        </div>
+      </div>
+      <div class="official-item">
+        <h3>AECID · Cooperación y ayuda humanitaria</h3>
+        <p>Agencia Española de Cooperación Internacional para el Desarrollo, coordina la ayuda de emergencia del Gobierno de España.</p>
+        <div class="official-contacts">
+          <a href="tel:+34913799600">+34 91 379 96 00</a>
+          <a href="mailto:informae@maec.es">informae@maec.es</a>
+        </div>
+      </div>
+    </div>
+    <p class="official-note">Datos de contacto recopilados de fuentes oficiales (Ministerio de Asuntos Exteriores, embajadas, Cruz Roja y AECID). Verifica siempre la información directamente en sus canales oficiales antes de actuar, ya que horarios y números pueden cambiar.</p>
   </div>
 </div>
 
@@ -609,6 +695,7 @@ document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click
 document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) closeOverlay(o); }));
 $('openRegister').addEventListener('click', () => { $('regForm').style.display='block'; $('regSuccess').style.display='none'; $('regMsg').innerHTML=''; openOverlay('registerOverlay'); });
 $('openUpdate').addEventListener('click', () => { $('updStep1').style.display='block'; $('updStep2').style.display='none'; $('updMsg1').innerHTML=''; $('updMsg2').innerHTML=''; $('u_token').value=''; openOverlay('updateOverlay'); });
+$('openOfficial').addEventListener('click', () => openOverlay('officialOverlay'));
 
 /* ---------- App bar sólida al hacer scroll ---------- */
 const appbar = $('appbar');
