@@ -222,6 +222,14 @@
   .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--navy);outline:none;}
   .field textarea{resize:vertical;min-height:64px;}
   .field-req{color:var(--amber);}
+  .material-chips,.dias-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px;}
+  .material-chip,.dia-chip{font-size:12.5px;font-weight:500;padding:6px 11px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--muted);cursor:pointer;}
+  .dia-chip{padding:6px 10px;min-width:34px;text-align:center;}
+  .material-chip.active,.dia-chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .horas-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .horas-row input[type="time"]{width:auto;flex:0 0 auto;}
+  .horas-row span{color:var(--faint);}
+  .link-btn{background:none;border:none;padding:0;font:inherit;font-size:12.5px;font-weight:600;color:var(--navy);text-decoration:underline;cursor:pointer;margin-left:4px;}
   .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
   .panel-submit{width:100%;justify-content:center;margin-top:6px;padding:13px;font-size:15px;}
   .form-note{font-size:12px;color:var(--faint);margin-top:11px;line-height:1.45;}
@@ -368,8 +376,51 @@
         <div style="flex:1;"><label>Provincia</label><input id="r_provincia" type="text" placeholder="Ej. Las Palmas" /></div>
       </div>
       <div class="field"><label>Teléfono o WhatsApp de contacto <span class="field-req">*</span> <span class="hint">(con prefijo, ej. +34…)</span></label><input id="r_contacto" type="tel" placeholder="+34 600 000 000" required /></div>
-      <div class="field"><label>Horario <span class="field-req">*</span></label><input id="r_horario" type="text" placeholder="Ej. L-V 10:00–14:00 y 17:00–20:00" required /></div>
-      <div class="field"><label>¿Qué hace falta ahora? <span class="hint">(lo más útil del listado)</span></label><textarea id="r_necesidades" placeholder="Ej. Agua embotellada, leche en polvo, pañales, kits de higiene. No se necesita ropa."></textarea></div>
+
+      <div class="field">
+        <label>Horario <span class="field-req">*</span></label>
+        <div class="dias-chips" id="r_dias">
+          <button type="button" class="dia-chip" data-dia="L">L</button>
+          <button type="button" class="dia-chip" data-dia="M">M</button>
+          <button type="button" class="dia-chip" data-dia="X">X</button>
+          <button type="button" class="dia-chip" data-dia="J">J</button>
+          <button type="button" class="dia-chip" data-dia="V">V</button>
+          <button type="button" class="dia-chip" data-dia="S">S</button>
+          <button type="button" class="dia-chip" data-dia="D">D</button>
+        </div>
+        <div class="horas-row">
+          <input id="r_hora_ini1" type="time" />
+          <span>—</span>
+          <input id="r_hora_fin1" type="time" />
+          <button type="button" class="link-btn" id="r_addTurno">+ Añadir segundo turno</button>
+        </div>
+        <div class="horas-row" id="r_turno2" style="display:none;">
+          <input id="r_hora_ini2" type="time" />
+          <span>—</span>
+          <input id="r_hora_fin2" type="time" />
+        </div>
+        <input id="r_horario" type="text" placeholder="Ej. L-V 10:00–14:00 y 17:00–20:00" required />
+        <p class="hint">Usa los selectores para generar el horario automáticamente, o escríbelo directamente.</p>
+      </div>
+
+      <div class="field">
+        <label>¿Qué hace falta ahora? <span class="hint">(lo más útil del listado)</span></label>
+        <div class="material-chips" id="r_materiales">
+          <button type="button" class="material-chip" data-mat="Agua embotellada">Agua embotellada</button>
+          <button type="button" class="material-chip" data-mat="Alimentos no perecederos">Alimentos no perecederos</button>
+          <button type="button" class="material-chip" data-mat="Leche en polvo">Leche en polvo</button>
+          <button type="button" class="material-chip" data-mat="Pañales">Pañales</button>
+          <button type="button" class="material-chip" data-mat="Kits de higiene">Kits de higiene</button>
+          <button type="button" class="material-chip" data-mat="Ropa">Ropa</button>
+          <button type="button" class="material-chip" data-mat="Calzado">Calzado</button>
+          <button type="button" class="material-chip" data-mat="Mantas">Mantas</button>
+          <button type="button" class="material-chip" data-mat="Medicamentos">Medicamentos</button>
+          <button type="button" class="material-chip" data-mat="Material de primeros auxilios">Primeros auxilios</button>
+          <button type="button" class="material-chip" data-mat="Productos de bebé">Productos de bebé</button>
+          <button type="button" class="material-chip" data-mat="Juguetes">Juguetes</button>
+        </div>
+        <textarea id="r_necesidades" placeholder="Ej. Agua embotellada, leche en polvo, pañales, kits de higiene. No se necesita ropa."></textarea>
+      </div>
       <div class="field hp" aria-hidden="true"><label>No rellenar</label><input id="r_web" type="text" tabindex="-1" autocomplete="off" /></div>
       <button class="btn btn-primary panel-submit" id="submitRegister">Publicar punto</button>
       <p class="form-note">Al publicar aceptas que estos datos del establecimiento sean visibles públicamente. No incluyas datos personales sensibles.</p>
@@ -701,7 +752,58 @@ function openOverlay(id){ $(id).classList.add('open'); document.body.style.overf
 function closeOverlay(el){ el.classList.remove('open'); document.body.style.overflow=''; }
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', e => closeOverlay(e.target.closest('.overlay'))));
 document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) closeOverlay(o); }));
-$('openRegister').addEventListener('click', () => { $('regForm').style.display='block'; $('regSuccess').style.display='none'; $('regMsg').innerHTML=''; openOverlay('registerOverlay'); });
+$('openRegister').addEventListener('click', () => {
+  $('regForm').style.display='block'; $('regSuccess').style.display='none'; $('regMsg').innerHTML='';
+  $('r_dias').querySelectorAll('.dia-chip').forEach(c => c.classList.remove('active'));
+  $('r_materiales').querySelectorAll('.material-chip').forEach(c => c.classList.remove('active'));
+  $('r_turno2').style.display='none'; $('r_addTurno').style.display='inline';
+  ['r_hora_ini1','r_hora_fin1','r_hora_ini2','r_hora_fin2'].forEach(id => $(id).value='');
+  openOverlay('registerOverlay');
+});
+
+/* ---------- Constructor de horario (días + horas) ---------- */
+function diasARangos(dias){
+  const orden = ['L','M','X','J','V','S','D'];
+  const sel = orden.filter(d => dias.includes(d));
+  if(!sel.length) return [];
+  const rangos = [];
+  let inicio = sel[0], anterior = sel[0];
+  for(let i=1;i<sel.length;i++){
+    const idx = orden.indexOf(sel[i]);
+    if(idx === orden.indexOf(anterior)+1){ anterior = sel[i]; continue; }
+    rangos.push(inicio===anterior ? inicio : `${inicio}-${anterior}`);
+    inicio = sel[i]; anterior = sel[i];
+  }
+  rangos.push(inicio===anterior ? inicio : `${inicio}-${anterior}`);
+  return rangos;
+}
+function actualizarHorarioTexto(){
+  const dias = Array.from($('r_dias').querySelectorAll('.dia-chip.active')).map(c => c.dataset.dia);
+  const rango = diasARangos(dias).join(', ');
+  const turnos = [];
+  const i1 = $('r_hora_ini1').value, f1 = $('r_hora_fin1').value;
+  if(i1 && f1) turnos.push(`${i1}–${f1}`);
+  const i2 = $('r_hora_ini2').value, f2 = $('r_hora_fin2').value;
+  if(i2 && f2) turnos.push(`${i2}–${f2}`);
+  if(rango && turnos.length) $('r_horario').value = `${rango} ${turnos.join(' y ')}`;
+}
+$('r_dias').addEventListener('click', (e) => {
+  const chip = e.target.closest('.dia-chip');
+  if(!chip) return;
+  chip.classList.toggle('active');
+  actualizarHorarioTexto();
+});
+['r_hora_ini1','r_hora_fin1','r_hora_ini2','r_hora_fin2'].forEach(id => $(id).addEventListener('change', actualizarHorarioTexto));
+$('r_addTurno').addEventListener('click', () => { $('r_turno2').style.display='flex'; $('r_addTurno').style.display='none'; });
+
+/* ---------- Selector de materiales/necesidades ---------- */
+$('r_materiales').addEventListener('click', (e) => {
+  const chip = e.target.closest('.material-chip');
+  if(!chip) return;
+  chip.classList.toggle('active');
+  const elegidos = Array.from($('r_materiales').querySelectorAll('.material-chip.active')).map(c => c.dataset.mat);
+  $('r_necesidades').value = elegidos.join(', ');
+});
 $('openUpdate').addEventListener('click', () => { $('updStep1').style.display='block'; $('updStep2').style.display='none'; $('updMsg1').innerHTML=''; $('updMsg2').innerHTML=''; $('u_token').value=''; openOverlay('updateOverlay'); });
 $('openOfficial').addEventListener('click', () => openOverlay('officialOverlay'));
 
