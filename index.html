@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Puntos de Acopio para Venezuela · Dónde llevar ayuda en España</title>
+<meta name="description" content="Directorio colaborativo de puntos de acopio en España para enviar alimentos y ayuda a Venezuela tras los terremotos de 2026. Iniciativa ciudadana sin ánimo de lucro." />
+<meta property="og:title" content="Puntos de Acopio para Venezuela" />
+<meta property="og:description" content="Encuentra dónde llevar alimentos y ayuda en España. Iniciativa sin ánimo de lucro." />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --bg:#FBFAF7;
+    --surface:#FFFFFF;
+    --ink:#16181D;
+    --muted:#5E6168;
+    --faint:#8A8D94;
+    --navy:#1E3A5F;
+    --navy-dark:#162B47;
+    --amber:#B45309;
+    --amber-soft:#FBEFDD;
+    --cream:#FBFAF7;
+    --wa:#1FAE54;
+    --wa-dark:#188F45;
+    --line:#E8E5DE;
+    --line-strong:#D8D4CA;
+    --green:#15803D;
+    --grey-dot:#9AA0A6;
+    --radius:16px;
+    --radius-sm:11px;
+    --shadow:0 1px 2px rgba(22,24,29,.04), 0 10px 30px rgba(22,24,29,.06);
+    --wrap:680px;
+    --wrap-dir:1000px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',system-ui,sans-serif;margin:0;line-height:1.12;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px;}
+
+  .wrap{max-width:var(--wrap);margin:0 auto;padding:0 20px;}
+  .wrap-dir{max-width:var(--wrap-dir);margin:0 auto;padding:0 20px;}
+
+  /* ---------------- App bar (fija, transparente sobre el hero) ---------------- */
+  .appbar{position:fixed;top:0;left:0;right:0;z-index:60;color:var(--cream);transition:background .28s ease,color .28s ease,border-color .28s ease;border-bottom:1px solid transparent;}
+  .appbar .inner{max-width:var(--wrap-dir);margin:0 auto;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .appbar.solid{background:rgba(251,250,247,.9);backdrop-filter:saturate(160%) blur(10px);-webkit-backdrop-filter:saturate(160%) blur(10px);color:var(--ink);border-bottom-color:var(--line);}
+  .brand{display:flex;align-items:center;gap:9px;min-width:0;color:inherit;text-decoration:none;}
+  .brand svg{flex:0 0 auto;width:22px;height:22px;}
+  .brand-text{display:flex;flex-direction:column;line-height:1.04;}
+  .brand-name{font-family:'Space Grotesk';font-weight:700;font-size:14px;letter-spacing:.09em;text-transform:uppercase;}
+  .brand-sub{font-size:10.5px;opacity:.72;letter-spacing:.02em;}
+  .share-top{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:var(--wa);color:#fff;border:none;border-radius:999px;font-weight:600;font-size:12.5px;padding:8px 13px;text-decoration:none;}
+  .share-top:hover{background:var(--wa-dark);}
+  .share-top svg{width:14px;height:14px;}
+
+  /* ---------------- Hero a pantalla completa ---------------- */
+  .hero{
+    position:relative;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+    text-align:center;color:var(--cream);overflow:hidden;
+    padding:88px 20px 72px;
+    background:
+      radial-gradient(58% 42% at 82% 116%, rgba(180,83,9,.20), transparent 70%),
+      radial-gradient(120% 90% at 50% -16%, #2C5183 0%, #1A2F4C 52%, #142840 100%);
+  }
+  .hero-inner{position:relative;max-width:760px;margin:0 auto;}
+  .pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.02em;color:#F4C99A;background:rgba(180,83,9,.18);border:1px solid rgba(244,201,154,.28);border-radius:999px;padding:6px 13px;margin-bottom:22px;}
+  .pill .dot{width:7px;height:7px;border-radius:50%;background:#E89B4D;flex:0 0 auto;}
+  .hero h1{font-size:clamp(2.05rem,6.4vw,3.5rem);font-weight:600;letter-spacing:-.02em;margin:0 auto 18px;max-width:16ch;}
+  .hero h1 em{font-style:normal;color:#F4C99A;}
+  .hero-sub{font-size:clamp(1rem,2.4vw,1.18rem);line-height:1.55;color:rgba(251,250,247,.82);max-width:52ch;margin:0 auto 26px;}
+
+  .hero-status{display:inline-flex;align-items:center;gap:9px;font-size:13.5px;color:rgba(251,250,247,.9);margin-bottom:30px;}
+  .live{position:relative;width:9px;height:9px;border-radius:50%;background:#5EE08A;flex:0 0 auto;}
+  .live::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(94,224,138,.5);animation:pulse 2.2s ease-out infinite;}
+  @keyframes pulse{0%{transform:scale(.6);opacity:.9;}100%{transform:scale(1.6);opacity:0;}}
+  .hero-status b{color:var(--cream);font-weight:600;}
+
+  .hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .hbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;font-weight:600;font-size:15px;padding:14px 22px;text-decoration:none;border:1px solid transparent;transition:transform .12s ease,background .2s,border-color .2s;}
+  .hbtn:active{transform:translateY(1px);}
+  .hbtn svg{width:17px;height:17px;}
+  .hbtn-primary{background:var(--cream);color:var(--navy-dark);}
+  .hbtn-primary:hover{background:#fff;}
+  .hbtn-ghost{background:transparent;color:var(--cream);border-color:rgba(251,250,247,.34);}
+  .hbtn-ghost:hover{border-color:var(--cream);background:rgba(251,250,247,.08);}
+
+  .scroll-hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;color:rgba(251,250,247,.6);font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+  .scroll-hint svg{width:18px;height:18px;animation:bob 1.8s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(5px);}}
+
+  /* ---------------- Directorio ---------------- */
+  .directory{padding:54px 0 20px;scroll-margin-top:64px;}
+  .eyebrow{font-family:'Space Grotesk';font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:9px;}
+  .directory h2{font-size:clamp(1.5rem,4vw,2rem);font-weight:600;letter-spacing:-.01em;margin-bottom:8px;}
+  .directory .lead{color:var(--muted);font-size:15px;max-width:52ch;margin:0 0 24px;}
+
+  /* Buscador + autocompletado */
+  .search-wrap{position:relative;max-width:560px;margin-bottom:8px;}
+  .search{position:relative;}
+  .search > svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--faint);pointer-events:none;}
+  .search input{width:100%;border:1px solid var(--line-strong);border-radius:13px;background:var(--surface);font-size:15.5px;padding:14px 16px 14px 44px;color:var(--ink);box-shadow:var(--shadow);}
+  .search input::placeholder{color:var(--faint);}
+  .search input:focus{border-color:var(--navy);outline:none;}
+  .suggestions{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:13px;box-shadow:0 12px 34px rgba(22,24,29,.13);overflow:hidden;z-index:30;display:none;}
+  .suggestions.open{display:block;}
+  .sug-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:none;text-align:left;padding:11px 16px;font-size:14.5px;color:var(--ink);border-bottom:1px solid var(--line);}
+  .sug-item:last-child{border-bottom:none;}
+  .sug-item:hover,.sug-item.active{background:#F5F2EC;}
+  .sug-val{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sug-tipo{flex:0 0 auto;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);}
+  .count{margin:14px 0 22px;font-size:13px;color:var(--muted);}
+
+  .config-warn{background:#FFF7E8;border:1px solid #F0DEC4;border-radius:var(--radius);padding:14px 16px;margin:0 0 18px;font-size:13.5px;color:#5C3A0E;max-width:640px;}
+  .config-warn b{color:var(--amber);}
+  .config-warn code{background:#fff;border:1px solid #F0DEC4;border-radius:5px;padding:1px 5px;font-size:12.5px;}
+
+  /* Rejilla de tarjetas */
+  .list{display:grid;grid-template-columns:1fr;gap:14px;padding-bottom:34px;}
+  @media(min-width:760px){.list{grid-template-columns:1fr 1fr;}}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:4px;}
+  .card-name{font-size:17.5px;font-weight:600;letter-spacing:-.01em;}
+  .badges{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto;}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;white-space:nowrap;}
+  .badge .dot{width:7px;height:7px;border-radius:50%;}
+  .b-recibiendo{background:#E7F4EC;color:var(--green);} .b-recibiendo .dot{background:var(--green);}
+  .b-completo{background:var(--amber-soft);color:var(--amber);} .b-completo .dot{background:var(--amber);}
+  .b-pausado{background:#F0F0EE;color:var(--muted);} .b-pausado .dot{background:var(--grey-dot);}
+  .b-verif{background:#EAF0F7;color:var(--navy);} .b-verif svg{width:12px;height:12px;}
+  .b-sinverif{background:#F0F0EE;color:var(--faint);}
+
+  .needs{margin:13px 0;padding:12px 14px;background:var(--amber-soft);border-radius:var(--radius-sm);border:1px solid #F0DEC4;}
+  .needs-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);margin-bottom:3px;}
+  .needs-text{font-size:14px;color:#5C3A0E;font-weight:500;}
+
+  .meta{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+  .meta-row{display:flex;gap:9px;font-size:14px;color:var(--ink);}
+  .meta-row svg{width:15px;height:15px;color:var(--faint);flex:0 0 auto;margin-top:2px;}
+  .meta-row a{color:var(--navy);text-decoration:none;font-weight:500;}
+  .meta-row a:hover{text-decoration:underline;}
+  .meta-row .sub{color:var(--muted);}
+
+  .freshness{margin-top:13px;font-size:12px;color:var(--faint);display:flex;align-items:center;gap:6px;}
+  .freshness.stale{color:var(--amber);}
+  .freshness svg{width:13px;height:13px;}
+
+  .card-actions{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap;}
+  .chip{flex:1 1 auto;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;padding:10px 8px;text-decoration:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);}
+  .chip:hover{border-color:var(--navy);}
+  .chip svg{width:15px;height:15px;flex:0 0 auto;}
+  .chip-wa{background:var(--wa);border-color:var(--wa);color:#fff;}
+  .chip-wa:hover{background:var(--wa-dark);border-color:var(--wa-dark);}
+
+  .state{grid-column:1/-1;background:var(--surface);border:1px dashed var(--line-strong);border-radius:var(--radius);padding:32px 22px;text-align:center;color:var(--muted);}
+  .state h3{font-size:16px;color:var(--ink);margin-bottom:6px;}
+  .state p{margin:0 0 16px;font-size:14px;}
+
+  .btn{appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:var(--radius-sm);font-weight:600;font-size:14px;padding:11px 15px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:border-color .15s,background .15s;}
+  .btn:hover{border-color:var(--navy);}
+  .btn svg{width:16px;height:16px;}
+  .btn-primary{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-dark);border-color:var(--navy-dark);}
+
+  /* ---------------- Modal / Panel ---------------- */
+  .overlay{position:fixed;inset:0;background:rgba(20,22,28,.5);z-index:80;display:none;align-items:flex-end;justify-content:center;}
+  .overlay.open{display:flex;}
+  .panel{background:var(--surface);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));animation:slideup .22s ease;}
+  @keyframes slideup{from{transform:translateY(26px);opacity:.5;}to{transform:translateY(0);opacity:1;}}
+  @media(min-width:640px){.overlay{align-items:center;} .panel{border-radius:20px;}}
+  .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .panel-head h2{font-size:20px;font-weight:600;}
+  .panel-close{border:none;background:none;color:var(--muted);font-size:27px;line-height:1;padding:2px 4px;}
+  .panel-sub{font-size:13.5px;color:var(--muted);margin:0 0 17px;}
+  .field{margin-bottom:13px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:5px;}
+  .field .hint{font-weight:400;color:var(--faint);}
+  .field input,.field textarea,.field select{width:100%;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);font-family:inherit;font-size:15px;padding:11px 12px;color:var(--ink);}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--navy);outline:none;}
+  .field textarea{resize:vertical;min-height:64px;}
+  .field-req{color:var(--amber);}
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+  .panel-submit{width:100%;justify-content:center;margin-top:6px;padding:13px;font-size:15px;}
+  .form-note{font-size:12px;color:var(--faint);margin-top:11px;line-height:1.45;}
+  .token-box{background:#EAF0F7;border:1px solid #C9D8EA;border-radius:var(--radius-sm);padding:15px;margin-top:14px;text-align:center;}
+  .token-box .lbl{font-size:12px;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+  .token-box .tok{font-family:'Space Grotesk';font-size:19px;font-weight:700;letter-spacing:.04em;color:var(--navy-dark);word-break:break-all;}
+  .token-box .warn{font-size:12.5px;color:#5C3A0E;margin-top:8px;}
+  .copy-btn{margin-top:10px;border:1px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;font-weight:600;font-size:13px;padding:7px 14px;}
+  .msg{font-size:13.5px;padding:10px 12px;border-radius:8px;margin-top:12px;}
+  .msg-ok{background:#E7F4EC;color:var(--green);}
+  .msg-err{background:#FBEAEA;color:#B42318;}
+
+  /* ---------------- Footer ---------------- */
+  footer{border-top:1px solid var(--line);background:#F5F3EE;margin-top:14px;}
+  .footer-in{max-width:var(--wrap);margin:0 auto;padding:28px 20px 40px;font-size:13px;color:var(--muted);line-height:1.6;}
+  .footer-in h4{font-family:'Space Grotesk';font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);margin:0 0 8px;}
+  .footer-block{margin-bottom:18px;}
+  .footer-official{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;}
+  .footer-official a{color:var(--navy);font-weight:600;text-decoration:none;}
+  .legal{font-size:12px;color:var(--faint);border-top:1px solid var(--line);padding-top:16px;}
+  .legal strong{color:var(--muted);}
+  .credit{font-size:13.5px;color:var(--ink);font-weight:500;margin:0 0 12px;}
+  .credit strong{color:var(--ink);font-weight:600;}
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *{animation:none !important;transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<!-- App bar -->
+<div class="appbar" id="appbar">
+  <div class="inner">
+    <a class="brand" href="#top" aria-label="Inicio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>
+      <span class="brand-text">
+        <span class="brand-name">Acopio</span>
+        <span class="brand-sub">Ayuda a Venezuela · España</span>
+      </span>
+    </a>
+    <a class="share-top" id="sharePlatform" href="#" aria-label="Compartir esta plataforma por WhatsApp">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.69-6.16a11.87 11.87 0 01-1.6-5.95C.16 5.34 5.5 0 12.06 0a11.8 11.8 0 018.4 3.49 11.78 11.78 0 013.48 8.4c0 6.55-5.34 11.89-11.9 11.89a11.9 11.9 0 01-5.68-1.45L.06 24zm6.6-3.8c1.68.99 3.28 1.59 5.4 1.59 5.45 0 9.9-4.43 9.9-9.89A9.86 9.86 0 0012.06 2 9.9 9.9 0 002.16 11.9c0 2.22.65 3.88 1.74 5.62l-1 3.66 3.76-.98z"/></svg>
+      Compartir
+    </a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <span class="pill"><span class="dot"></span> Terremotos de Venezuela · junio 2026</span>
+    <h1>Tu ayuda tiene <em>dónde ir</em></h1>
+    <p class="hero-sub">Un directorio abierto de los puntos de acopio en España que recogen alimentos y ayuda para los afectados. Encuentra el más cercano, mira qué necesitan hoy y acércalo.</p>
+    <div class="hero-status"><span class="live"></span><span id="heroStatus">Cargando puntos…</span></div>
+    <div class="hero-cta">
+      <a class="hbtn hbtn-primary" href="#directorio" id="goDirectory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Ver el directorio
+      </a>
+      <button class="hbtn hbtn-ghost" id="openRegister">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Registrar punto
+      </button>
+      <button class="hbtn hbtn-ghost" id="openUpdate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-2.6-6.4M21 4v5h-5"/></svg>
+        Actualizar
+      </button>
+    </div>
+  </div>
+  <a class="scroll-hint" href="#directorio" aria-label="Bajar al directorio">
+    Directorio
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+  </a>
+</section>
+
+<!-- DIRECTORIO -->
+<main class="directory wrap-dir" id="directorio">
+  <div class="eyebrow">El directorio</div>
+  <h2>Puntos de acopio en España</h2>
+  <p class="lead">Busca por establecimiento, ciudad o provincia. Confirma siempre por teléfono o WhatsApp antes de desplazarte.</p>
+
+  <div class="search-wrap">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchInput" type="search" inputmode="search" autocomplete="off" placeholder="Buscar por ciudad, provincia o establecimiento" aria-label="Buscar puntos de acopio" role="combobox" aria-expanded="false" aria-controls="suggestions" />
+    </div>
+    <div class="suggestions" id="suggestions" role="listbox"></div>
+  </div>
+  <div class="count" id="count"></div>
+
+  <div id="configWarn"></div>
+  <div class="list" id="list"></div>
+</main>
+
+<footer>
+  <div class="footer-in">
+    <div class="footer-block footer-official">
+      <h4>Canales oficiales</h4>
+      Emergencia consular de España: <a href="tel:+34910001249">+34 91 000 1249</a> (desde España) · <a href="tel:+584242090264">+58 424-2090264</a> (desde Venezuela).<br/>
+      El Gobierno de Canarias ha activado su red de entidades canarias en Venezuela para apoyo y localización de personas.
+    </div>
+    <div class="footer-block">
+      <h4>Aviso</h4>
+      Esta web es un <strong>directorio informativo y colaborativo</strong>. La información la aportan los propios puntos de acopio y puede contener errores o estar desactualizada. <strong>Confirma siempre por teléfono o WhatsApp antes de desplazarte</strong> y de preparar una donación.
+    </div>
+    <div class="legal">
+      <p class="credit">Creado y mantenido por <strong>Sergio de Juan González</strong></p>
+      <p><strong>Iniciativa ciudadana sin ánimo de lucro.</strong> Sin afiliación oficial con instituciones públicas, ONG ni administraciones. A través de esta web <strong>no se recauda dinero ni se gestionan donaciones económicas</strong>; únicamente se listan lugares físicos de recogida.</p>
+      <p>Solo se almacenan los datos del establecimiento que cada punto decide publicar. No se recogen datos de las personas donantes. Para corregir o eliminar un punto, usa la opción «Actualizar mi punto» o escribe a la persona responsable que lo publicó.</p>
+      <p>© 2026 · Hecho de forma solidaria. El contenido puede compartirse y reutilizarse libremente con fines de ayuda humanitaria.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ REGISTRO ============ -->
+<div class="overlay" id="registerOverlay" role="dialog" aria-modal="true" aria-labelledby="regTitle">
+  <div class="panel">
+    <div class="panel-head"><h2 id="regTitle">Registrar un punto de acopio</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <p class="panel-sub">Publica un lugar de recogida en España. Al terminar recibirás un código para poder actualizarlo después.</p>
+    <div id="regForm">
+      <div class="field"><label>Nombre del establecimiento <span class="field-req">*</span></label><input id="r_nombre" type="text" placeholder="Ej. Asociación Canario-Venezolana de…" required /></div>
+      <div class="field"><label>Dirección <span class="field-req">*</span></label><input id="r_direccion" type="text" placeholder="Calle, número" required /></div>
+      <div class="field" style="display:flex;gap:10px;">
+        <div style="flex:1;"><label>Ciudad <span class="field-req">*</span></label><input id="r_ciudad" type="text" placeholder="Ej. Las Palmas" required /></div>
+        <div style="flex:1;"><label>Provincia</label><input id="r_provincia" type="text" placeholder="Ej. Las Palmas" /></div>
+      </div>
+      <div class="field"><label>Teléfono o WhatsApp de contacto <span class="field-req">*</span> <span class="hint">(con prefijo, ej. +34…)</span></label><input id="r_contacto" type="tel" placeholder="+34 600 000 000" required /></div>
+      <div class="field"><label>Horario <span class="field-req">*</span></label><input id="r_horario" type="text" placeholder="Ej. L-V 10:00–14:00 y 17:00–20:00" required /></div>
+      <div class="field"><label>¿Qué hace falta ahora? <span class="hint">(lo más útil del listado)</span></label><textarea id="r_necesidades" placeholder="Ej. Agua embotellada, leche en polvo, pañales, kits de higiene. No se necesita ropa."></textarea></div>
+      <div class="field hp" aria-hidden="true"><label>No rellenar</label><input id="r_web" type="text" tabindex="-1" autocomplete="off" /></div>
+      <button class="btn btn-primary panel-submit" id="submitRegister">Publicar punto</button>
+      <p class="form-note">Al publicar aceptas que estos datos del establecimiento sean visibles públicamente. No incluyas datos personales sensibles.</p>
+      <div id="regMsg"></div>
+    </div>
+    <div id="regSuccess" style="display:none;">
+      <div class="msg msg-ok">Punto publicado. Aparecerá como «sin verificar» hasta su revisión.</div>
+      <div class="token-box">
+        <div class="lbl">Tu código de gestión</div>
+        <div class="tok" id="tokenValue"></div>
+        <button class="copy-btn" id="copyToken">Copiar código</button>
+        <div class="warn">Guárdalo. Lo necesitarás para actualizar o pausar este punto. No se puede recuperar.</div>
+      </div>
+      <button class="btn panel-submit" data-close style="margin-top:14px;">Hecho</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ACTUALIZAR ============ -->
+<div class="overlay" id="updateOverlay" role="dialog" aria-modal="true" aria-labelledby="updTitle">
+  <div class="panel">
+    <div class="panel-head"><h2 id="updTitle">Actualizar mi punto</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <p class="panel-sub">Introduce el código de gestión que recibiste al registrar el punto.</p>
+    <div id="updStep1">
+      <div class="field"><label>Código de gestión</label><input id="u_token" type="text" placeholder="Pega aquí tu código" autocomplete="off" /></div>
+      <button class="btn btn-primary panel-submit" id="loadPunto">Buscar mi punto</button>
+      <div id="updMsg1"></div>
+    </div>
+    <div id="updStep2" style="display:none;">
+      <div class="field"><label>Estado del punto</label>
+        <select id="u_estado">
+          <option value="recibiendo">Recibiendo ayuda</option>
+          <option value="completo">Completo por ahora</option>
+          <option value="pausado">Pausado / cerrado</option>
+        </select>
+      </div>
+      <div class="field"><label>¿Qué hace falta ahora?</label><textarea id="u_necesidades" placeholder="Actualiza lo que se necesita hoy"></textarea></div>
+      <div class="field"><label>Horario</label><input id="u_horario" type="text" /></div>
+      <div class="field"><label>Teléfono o WhatsApp de contacto</label><input id="u_contacto" type="tel" /></div>
+      <button class="btn btn-primary panel-submit" id="savePunto">Guardar cambios</button>
+      <div id="updMsg2"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ============================================================
+   CONFIGURACIÓN  ·  rellena con tu proyecto de Supabase
+   (Project Settings -> API).
+   ============================================================ */
+const SUPABASE_URL = 'TU_SUPABASE_URL';        // p.ej. https://xxxx.supabase.co
+const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY';
+/* ============================================================ */
+
+const CONFIGURED = SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20;
+const sb = CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const SITE_URL = (location.origin && location.origin.startsWith('http')) ? location.origin + location.pathname : 'https://tu-sitio.netlify.app';
+
+let PUNTOS = [];
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
+const norm = (s) => (s == null ? '' : String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim());
+const soloDigitos = (t) => (t || '').replace(/[^\d]/g, '');
+
+function timeAgo(iso){
+  if(!iso) return {txt:'sin fecha', stale:true};
+  const h = (Date.now() - new Date(iso).getTime())/36e5;
+  if(h < 1) return {txt:'actualizado hace minutos', stale:false};
+  if(h < 24) return {txt:`actualizado hace ${Math.round(h)} h`, stale:false};
+  const d = Math.round(h/24);
+  return {txt:`actualizado hace ${d} ${d===1?'día':'días'}`, stale:h>48};
+}
+function mapsLink(p){
+  const q = [p.direccion, p.ciudad, p.provincia, 'España'].filter(Boolean).join(', ');
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+}
+function waSharePoint(p){
+  const lineas = [
+    `Punto de acopio para Venezuela: ${p.nombre}`,
+    `Dirección: ${[p.direccion, p.ciudad, p.provincia].filter(Boolean).join(', ')}`,
+    p.horario ? `Horario: ${p.horario}` : '',
+    p.necesidades ? `Hace falta: ${p.necesidades}` : '',
+    p.contacto ? `Contacto: ${p.contacto}` : '',
+    `Más puntos: ${SITE_URL}`
+  ].filter(Boolean).join('\n');
+  return 'https://wa.me/?text=' + encodeURIComponent(lineas);
+}
+function waContact(p){ const d = soloDigitos(p.whatsapp || p.contacto); return d ? 'https://wa.me/' + d : null; }
+function estadoBadge(estado){
+  const map = {recibiendo:['b-recibiendo','Recibiendo'],completo:['b-completo','Completo'],pausado:['b-pausado','Pausado']};
+  const [cls, txt] = map[estado] || map.recibiendo;
+  return `<span class="badge ${cls}"><span class="dot"></span>${txt}</span>`;
+}
+
+/* ---------- Tarjeta ---------- */
+function cardHTML(p){
+  const fresh = timeAgo(p.updated_at);
+  const wa = waContact(p);
+  const verif = p.verificado
+    ? `<span class="badge b-verif"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Verificado</span>`
+    : `<span class="badge b-sinverif">Sin verificar</span>`;
+  return `
+  <article class="card">
+    <div class="card-head">
+      <h3 class="card-name">${esc(p.nombre)}</h3>
+      <div class="badges">${estadoBadge(p.estado)}${verif}</div>
+    </div>
+    ${p.necesidades ? `<div class="needs"><div class="needs-label">Hace falta ahora</div><div class="needs-text">${esc(p.necesidades)}</div></div>` : ''}
+    <div class="meta">
+      <div class="meta-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span><a href="${mapsLink(p)}" target="_blank" rel="noopener">${esc(p.direccion)}</a><span class="sub">${p.ciudad ? ', ' + esc(p.ciudad) : ''}${p.provincia ? ' (' + esc(p.provincia) + ')' : ''}</span></span>
+      </div>
+      ${p.horario ? `<div class="meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>${esc(p.horario)}</span></div>` : ''}
+      ${p.contacto ? `<div class="meta-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.3 1.8.6 2.6a2 2 0 01-.5 2.1L8.1 9.6a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.5c.8.3 1.7.5 2.6.6a2 2 0 011.7 2Z"/></svg><span>${esc(p.contacto)}</span></div>` : ''}
+    </div>
+    <div class="freshness ${fresh.stale ? 'stale' : ''}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2 2"/></svg>
+      ${fresh.txt}${fresh.stale ? ' · confirma antes de ir' : ''}
+    </div>
+    <div class="card-actions">
+      ${wa ? `<a class="chip chip-wa" href="${wa}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M.06 24l1.69-6.16a11.87 11.87 0 01-1.6-5.95C.16 5.34 5.5 0 12.06 0a11.8 11.8 0 018.4 3.49 11.78 11.78 0 013.48 8.4c0 6.55-5.34 11.89-11.9 11.89a11.9 11.9 0 01-5.68-1.45L.06 24z"/></svg>WhatsApp</a>` : ''}
+      <a class="chip" href="${mapsLink(p)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>Cómo llegar</a>
+      <a class="chip" href="${waSharePoint(p)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a1 1 0 001 1h14a1 1 0 001-1v-8"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg>Compartir</a>
+    </div>
+  </article>`;
+}
+
+const DEMO = {nombre:'Asociación Amigos Canario-Venezolanos', direccion:'Calle Ejemplo 12', ciudad:'Las Palmas', provincia:'Las Palmas', contacto:'+34 600 000 000', whatsapp:'+34600000000', horario:'L-V 10:00–14:00 y 17:00–20:00', necesidades:'Agua embotellada, leche en polvo, pañales y kits de higiene. No se necesita ropa por ahora.', estado:'recibiendo', verificado:true, updated_at:new Date(Date.now()-3*36e5).toISOString()};
+
+function setHeroStatus(){
+  if(!CONFIGURED){ $('heroStatus').textContent = 'Vista de ejemplo — conecta Supabase'; return; }
+  const total = PUNTOS.length;
+  if(!total){ $('heroStatus').innerHTML = 'Aún no hay puntos — <b>sé el primero</b>'; return; }
+  const activos = PUNTOS.filter(p => p.estado === 'recibiendo').length;
+  $('heroStatus').innerHTML = `<b>${activos}</b> ${activos===1?'punto recibiendo ayuda':'puntos recibiendo ayuda'} en España`;
+}
+
+function render(items){
+  const list = $('list');
+  if(!CONFIGURED){
+    $('configWarn').innerHTML = `<div class="config-warn"><b>Falta conectar Supabase.</b> Abre <code>index.html</code> y rellena <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code> (Supabase -> Project Settings -> API). Mientras tanto se muestra un ejemplo.</div>`;
+    list.innerHTML = cardHTML(DEMO);
+    $('count').textContent = 'Vista de ejemplo';
+    return;
+  }
+  if(!items.length){
+    list.innerHTML = `<div class="state"><h3>No se han encontrado puntos</h3><p>Prueba con otra ciudad o provincia, o registra un punto nuevo.</p><button class="btn btn-primary" onclick="document.getElementById('openRegister').click()">Registrar punto</button></div>`;
+    $('count').textContent = '';
+    return;
+  }
+  list.innerHTML = items.map(cardHTML).join('');
+  $('count').textContent = `${items.length} ${items.length===1?'punto':'puntos'} de acopio`;
+}
+
+/* ---------- Cargar ---------- */
+async function cargar(){
+  if(!CONFIGURED){ setHeroStatus(); render([]); return; }
+  const { data, error } = await sb.from('puntos_publicos').select('*')
+    .order('verificado', {ascending:false}).order('updated_at', {ascending:false});
+  if(error){ console.error(error); $('heroStatus').textContent='No se pudo cargar'; $('list').innerHTML = `<div class="state"><h3>No se pudo cargar el listado</h3><p>Revisa la conexión con Supabase y las políticas RLS.</p></div>`; return; }
+  PUNTOS = data || [];
+  setHeroStatus();
+  aplicarFiltro();
+}
+
+function aplicarFiltro(){
+  const q = norm($('searchInput').value);
+  if(!q){ render(PUNTOS); return; }
+  const f = PUNTOS.filter(p => norm([p.nombre,p.ciudad,p.provincia,p.necesidades,p.direccion].filter(Boolean).join(' ')).includes(q));
+  render(f);
+}
+
+/* ---------- Autocompletado ---------- */
+let SUG = [], sugActive = -1;
+function buildSuggestions(){
+  const seen = new Set(), out = [];
+  const push = (value, tipo) => { const v = (value||'').trim(); if(!v) return; const k = tipo+'|'+norm(v); if(seen.has(k)) return; seen.add(k); out.push({value:v, tipo}); };
+  PUNTOS.forEach(p => { push(p.nombre,'Establecimiento'); push(p.ciudad,'Ciudad'); push(p.provincia,'Provincia'); });
+  return out;
+}
+function showSuggestions(){
+  const box = $('suggestions');
+  const q = norm($('searchInput').value);
+  if(!q || !CONFIGURED){ closeSuggestions(); return; }
+  const all = buildSuggestions();
+  const starts = [], incl = [];
+  all.forEach(s => { const n = norm(s.value); if(n.startsWith(q)) starts.push(s); else if(n.includes(q)) incl.push(s); });
+  SUG = starts.concat(incl).slice(0,7); sugActive = -1;
+  if(!SUG.length){ closeSuggestions(); return; }
+  box.innerHTML = SUG.map((s,i)=>`<button type="button" class="sug-item" data-i="${i}" role="option"><span class="sug-val">${esc(s.value)}</span><span class="sug-tipo">${s.tipo}</span></button>`).join('');
+  box.classList.add('open'); $('searchInput').setAttribute('aria-expanded','true');
+}
+function closeSuggestions(){ const box=$('suggestions'); box.classList.remove('open'); box.innerHTML=''; sugActive=-1; $('searchInput').setAttribute('aria-expanded','false'); }
+function setActive(i){
+  const items = $('suggestions').querySelectorAll('.sug-item');
+  items.forEach(el => el.classList.remove('active'));
+  if(i>=0 && items[i]){ items[i].classList.add('active'); items[i].scrollIntoView({block:'nearest'}); }
+}
+function pickSuggestion(i){ const s = SUG[i]; if(!s) return; $('searchInput').value = s.value; closeSuggestions(); aplicarFiltro(); }
+
+$('searchInput').addEventListener('input', () => { aplicarFiltro(); showSuggestions(); });
+$('searchInput').addEventListener('keydown', (e) => {
+  const open = $('suggestions').classList.contains('open');
+  if(e.key === 'ArrowDown'){ if(!open){ showSuggestions(); return; } e.preventDefault(); sugActive = Math.min(sugActive+1, SUG.length-1); setActive(sugActive); }
+  else if(e.key === 'ArrowUp'){ if(open){ e.preventDefault(); sugActive = Math.max(sugActive-1, 0); setActive(sugActive); } }
+  else if(e.key === 'Enter'){ if(open && sugActive>=0){ e.preventDefault(); pickSuggestion(sugActive); } else { closeSuggestions(); } }
+  else if(e.key === 'Escape'){ closeSuggestions(); }
+});
+$('suggestions').addEventListener('mousedown', (e) => { const it = e.target.closest('.sug-item'); if(it){ e.preventDefault(); pickSuggestion(+it.dataset.i); } });
+document.addEventListener('click', (e) => { if(!e.target.closest('.search-wrap')) closeSuggestions(); });
+
+/* ---------- Overlays ---------- */
+function openOverlay(id){ $(id).classList.add('open'); document.body.style.overflow='hidden'; }
+function closeOverlay(el){ el.classList.remove('open'); document.body.style.overflow=''; }
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', e => closeOverlay(e.target.closest('.overlay'))));
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) closeOverlay(o); }));
+$('openRegister').addEventListener('click', () => { $('regForm').style.display='block'; $('regSuccess').style.display='none'; $('regMsg').innerHTML=''; openOverlay('registerOverlay'); });
+$('openUpdate').addEventListener('click', () => { $('updStep1').style.display='block'; $('updStep2').style.display='none'; $('updMsg1').innerHTML=''; $('updMsg2').innerHTML=''; $('u_token').value=''; openOverlay('updateOverlay'); });
+
+/* ---------- App bar sólida al hacer scroll ---------- */
+const appbar = $('appbar');
+function onScroll(){ if(window.scrollY > window.innerHeight - 90) appbar.classList.add('solid'); else appbar.classList.remove('solid'); }
+window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+/* ---------- Compartir plataforma ---------- */
+$('sharePlatform').addEventListener('click', (e) => {
+  e.preventDefault();
+  const txt = `Directorio de puntos de acopio en España para ayudar a Venezuela tras los terremotos. Encuentra dónde llevar alimentos y ayuda:\n${SITE_URL}`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+});
+
+/* ---------- Registrar ---------- */
+function genToken(){ const a = new Uint8Array(9); crypto.getRandomValues(a); return Array.from(a, b => b.toString(36)).join('').slice(0,12).toUpperCase(); }
+$('submitRegister').addEventListener('click', async () => {
+  if($('r_web').value){ return; }
+  const req = {nombre:$('r_nombre'), direccion:$('r_direccion'), ciudad:$('r_ciudad'), contacto:$('r_contacto'), horario:$('r_horario')};
+  for(const k in req){ if(!req[k].value.trim()){ req[k].focus(); $('regMsg').innerHTML = `<div class="msg msg-err">Falta rellenar: ${k}.</div>`; return; } }
+  if(!CONFIGURED){ $('regMsg').innerHTML = `<div class="msg msg-err">Conecta Supabase antes de publicar (ver aviso en la página).</div>`; return; }
+  const btn = $('submitRegister'); btn.disabled = true; btn.textContent = 'Publicando…';
+  const token = genToken();
+  const contacto = $('r_contacto').value.trim();
+  const row = {nombre:$('r_nombre').value.trim(), direccion:$('r_direccion').value.trim(), ciudad:$('r_ciudad').value.trim(), provincia:$('r_provincia').value.trim() || null, contacto, whatsapp:soloDigitos(contacto), horario:$('r_horario').value.trim(), necesidades:$('r_necesidades').value.trim() || null, estado:'recibiendo', verificado:false, edit_token:token};
+  const { error } = await sb.from('puntos_acopio').insert(row);
+  btn.disabled = false; btn.textContent = 'Publicar punto';
+  if(error){ console.error(error); $('regMsg').innerHTML = `<div class="msg msg-err">No se pudo publicar. Revisa las políticas RLS de inserción.</div>`; return; }
+  $('tokenValue').textContent = token; $('regForm').style.display='none'; $('regSuccess').style.display='block';
+  cargar();
+});
+$('copyToken').addEventListener('click', () => {
+  const t = $('tokenValue').textContent;
+  navigator.clipboard?.writeText(t).then(()=>{ $('copyToken').textContent='Copiado'; setTimeout(()=>$('copyToken').textContent='Copiar código',1500); });
+});
+
+/* ---------- Actualizar ---------- */
+$('loadPunto').addEventListener('click', async () => {
+  const token = $('u_token').value.trim();
+  if(!token){ $('updMsg1').innerHTML = `<div class="msg msg-err">Introduce tu código.</div>`; return; }
+  if(!CONFIGURED){ $('updMsg1').innerHTML = `<div class="msg msg-err">Conecta Supabase primero.</div>`; return; }
+  const btn = $('loadPunto'); btn.disabled=true; btn.textContent='Buscando…';
+  const { data, error } = await sb.rpc('buscar_punto_por_token', {p_token:token});
+  btn.disabled=false; btn.textContent='Buscar mi punto';
+  if(error || !data || !data.length){ $('updMsg1').innerHTML = `<div class="msg msg-err">Código no encontrado. Revisa que esté bien copiado.</div>`; return; }
+  const p = data[0];
+  $('u_estado').value = p.estado || 'recibiendo'; $('u_necesidades').value = p.necesidades || ''; $('u_horario').value = p.horario || ''; $('u_contacto').value = p.contacto || '';
+  $('updStep1').style.display='none'; $('updStep2').style.display='block'; $('savePunto').dataset.token = token;
+});
+$('savePunto').addEventListener('click', async () => {
+  const token = $('savePunto').dataset.token;
+  const btn = $('savePunto'); btn.disabled=true; btn.textContent='Guardando…';
+  const contacto = $('u_contacto').value.trim();
+  const { data, error } = await sb.rpc('actualizar_punto', {p_token:token, p_estado:$('u_estado').value, p_necesidades:$('u_necesidades').value.trim(), p_horario:$('u_horario').value.trim(), p_contacto:contacto, p_whatsapp:soloDigitos(contacto)});
+  btn.disabled=false; btn.textContent='Guardar cambios';
+  if(error || data===false){ $('updMsg2').innerHTML = `<div class="msg msg-err">No se pudo guardar. Vuelve a intentarlo.</div>`; return; }
+  $('updMsg2').innerHTML = `<div class="msg msg-ok">Cambios guardados. Gracias por mantenerlo al día.</div>`;
+  cargar(); setTimeout(()=>closeOverlay($('updateOverlay')), 1200);
+});
+
+/* ---------- Init ---------- */
+cargar();
+</script>
+</body>
+</html>
