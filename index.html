@@ -310,17 +310,26 @@
     .item-row-fields{grid-template-columns:1fr 1fr;}
     .item-row-fields .field.full{grid-column:span 2;}
   }
-  .entregas-block{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);}
-  .entregas-title{font-size:15px;font-weight:600;margin:0 0 4px;}
-  .entregas-export{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;}
-  .entregas-export input[type="date"]{font-size:12px;padding:6px 8px;border-radius:7px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);}
-  .entrega-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:9px;}
+  .panel-section{margin-top:24px;padding-top:18px;border-top:1px solid var(--line);}
+  .panel-section:first-child{margin-top:0;padding-top:0;border-top:none;}
+  .panel-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 14px;}
+  .entregas-block{margin-top:24px;padding-top:18px;border-top:1px solid var(--line);}
+  .entregas-summary{font-size:13.5px;color:var(--muted);margin:0 0 14px;}
+  .entregas-actions{display:flex;flex-direction:column;gap:9px;margin:0 0 18px;}
+  .btn-scan{width:100%;justify-content:center;}
+  .entregas-export-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .entregas-export-row .btn-mini{flex:1 1 auto;text-align:center;}
+  .entregas-export-row input[type="date"]{flex:1 1 120px;min-width:0;font-size:12px;padding:6px 8px;border-radius:7px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);}
+  @media(max-width:360px){.entregas-export-row{flex-direction:column;align-items:stretch;} .entregas-export-row > *{width:100%;}}
+  .entrega-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 13px;margin-bottom:9px;}
   .entrega-row-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
   .entrega-codigo{font-family:'Space Grotesk';font-weight:700;font-size:13.5px;color:var(--navy-dark);}
   .entrega-fecha{font-size:12px;color:var(--muted);}
   .entrega-items{font-size:13px;color:var(--ink);margin-top:6px;line-height:1.5;}
+  .entrega-confirmar{width:100%;justify-content:center;margin-top:10px !important;}
   .badge-pendiente{background:#FBEFD9;color:#8A5A0E;}
   .badge-recibido{background:#E7F4EC;color:var(--green);}
+  .entregas-empty{font-size:13.5px;color:var(--faint);padding:14px 0;text-align:center;}
   .ticket-label{border:2px dashed var(--line-strong);border-radius:var(--radius-sm);padding:18px;margin-bottom:16px;}
   .ticket-label .tl-codigo{font-family:'Space Grotesk';font-weight:700;font-size:22px;color:var(--navy-dark);letter-spacing:.03em;}
   .ticket-label .tl-row{font-size:13.5px;margin-top:6px;color:var(--ink);}
@@ -739,26 +748,31 @@
       <div id="updMsg1"></div>
     </div>
     <div id="updStep2" style="display:none;">
-      <div class="field"><label>Estado del punto</label>
-        <select id="u_estado">
-          <option value="recibiendo">Recibiendo ayuda</option>
-          <option value="completo">Completo por ahora</option>
-          <option value="pausado">Pausado / cerrado</option>
-        </select>
+      <div class="panel-section">
+        <h3 class="panel-section-title">Datos del punto</h3>
+        <div class="field"><label>Estado del punto</label>
+          <select id="u_estado">
+            <option value="recibiendo">Recibiendo ayuda</option>
+            <option value="completo">Completo por ahora</option>
+            <option value="pausado">Pausado / cerrado</option>
+          </select>
+        </div>
+        <div class="field"><label>¿Qué hace falta ahora?</label><textarea id="u_necesidades" placeholder="Actualiza lo que se necesita hoy"></textarea></div>
+        <div class="field"><label>Horario</label><input id="u_horario" type="text" /></div>
+        <div class="field"><label>Teléfono o WhatsApp de contacto</label><input id="u_contacto" type="tel" /></div>
+        <button class="btn btn-primary panel-submit" id="savePunto">Guardar cambios</button>
+        <div id="updMsg2"></div>
       </div>
-      <div class="field"><label>¿Qué hace falta ahora?</label><textarea id="u_necesidades" placeholder="Actualiza lo que se necesita hoy"></textarea></div>
-      <div class="field"><label>Horario</label><input id="u_horario" type="text" /></div>
-      <div class="field"><label>Teléfono o WhatsApp de contacto</label><input id="u_contacto" type="tel" /></div>
-      <button class="btn btn-primary panel-submit" id="savePunto">Guardar cambios</button>
-      <div id="updMsg2"></div>
-      <div class="entregas-block">
-        <h3 class="entregas-title">Entregas recibidas</h3>
-        <p class="panel-sub" id="entregasCount"></p>
-        <div class="entregas-export">
-          <button type="button" class="btn-mini" id="openScan">Escanear entregas (QR)</button>
-          <button type="button" class="btn-mini" id="exportAll">Exportar histórico (Excel)</button>
-          <input type="date" id="exportDate" />
-          <button type="button" class="btn-mini" id="exportDay">Exportar ese día</button>
+      <div class="panel-section entregas-block">
+        <h3 class="panel-section-title">Entregas</h3>
+        <p class="entregas-summary" id="entregasCount"></p>
+        <div class="entregas-actions">
+          <button type="button" class="btn btn-primary btn-scan" id="openScan">Escanear entregas (QR)</button>
+          <div class="entregas-export-row">
+            <button type="button" class="btn-mini" id="exportAll">Exportar histórico</button>
+            <input type="date" id="exportDate" aria-label="Fecha a exportar" />
+            <button type="button" class="btn-mini" id="exportDay">Exportar ese día</button>
+          </div>
         </div>
         <div id="exportMsg"></div>
         <div id="entregasList"></div>
@@ -1519,7 +1533,7 @@ function entregaRowHTML(e){
       <span class="badge ${e.estado === 'recibido' ? 'badge-recibido' : 'badge-pendiente'}">${e.estado === 'recibido' ? 'Recibido' : 'Pendiente'}</span>
     </div>
     <div class="entrega-items">${esc(itemsTxt)}</div>
-    ${e.estado !== 'recibido' ? `<button type="button" class="btn-mini entrega-confirmar" style="margin-top:9px;">Marcar recibido</button>` : ''}
+    ${e.estado !== 'recibido' ? `<button type="button" class="btn-mini entrega-confirmar">Marcar recibido</button>` : ''}
   </div>`;
 }
 
@@ -1532,7 +1546,9 @@ async function cargarEntregas(token){
   const entregas = data || [];
   ENTREGAS_CACHE = entregas;
   $('entregasCount').textContent = entregas.length ? `${entregas.length} ${entregas.length===1?'entrega registrada':'entregas registradas'}` : 'Aún no hay entregas registradas.';
-  $('entregasList').innerHTML = entregas.map(entregaRowHTML).join('');
+  $('entregasList').innerHTML = entregas.length
+    ? entregas.map(entregaRowHTML).join('')
+    : `<p class="entregas-empty">Cuando alguien done a este punto, sus entregas aparecerán aquí.</p>`;
 }
 
 /* ---------- Escanear entregas (QR) ---------- */
