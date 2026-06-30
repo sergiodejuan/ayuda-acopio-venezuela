@@ -766,6 +766,7 @@
       <div class="panel-section entregas-block">
         <h3 class="panel-section-title">Entregas</h3>
         <p class="entregas-summary" id="entregasCount"></p>
+        <div id="confirmMsg"></div>
         <div class="entregas-actions">
           <button type="button" class="btn btn-primary btn-scan" id="openScan">Escanear entregas (QR)</button>
           <div class="entregas-export-row">
@@ -1418,6 +1419,7 @@ $('list').addEventListener('click', async (e) => {
     $('ticketLabel').innerHTML = ticketLabelHTML(row, punto ? punto.nombre : '');
     CURRENT_TICKET = {entrega: row, puntoNombre: punto ? punto.nombre : ''};
     renderTicketQR(row);
+    subscribeTicketUpdates(row);
     msg.innerHTML = '';
     panel.querySelectorAll('.item-row').forEach(row => {
       row.querySelector('.t_cat_chk').checked = false;
@@ -1442,6 +1444,27 @@ $('list').addEventListener('change', (e) => {
 });
 
 let CURRENT_TICKET = null;
+let TICKET_CHANNEL = null;
+
+function unsubscribeTicketChannel(){
+  if(TICKET_CHANNEL){ try{ sb.removeChannel(TICKET_CHANNEL); }catch(err){ console.error(err); } TICKET_CHANNEL = null; }
+}
+
+function subscribeTicketUpdates(entrega){
+  unsubscribeTicketChannel();
+  if(!CONFIGURED || typeof sb.channel !== 'function') return;
+  try {
+    TICKET_CHANNEL = sb.channel('entrega-' + entrega.id)
+      .on('postgres_changes', {event: 'UPDATE', schema: 'public', table: 'entregas', filter: 'id=eq.' + entrega.id}, (payload) => {
+        if(payload.new && payload.new.estado === 'recibido'){
+          closeOverlay($('ticketOverlay'));
+          mostrarSplashAgradecimiento(payload.new, CURRENT_TICKET ? CURRENT_TICKET.puntoNombre : '');
+          unsubscribeTicketChannel();
+        }
+      })
+      .subscribe();
+  } catch(err){ console.error(err); }
+}
 
 $('t_print').addEventListener('click', () => window.print());
 
@@ -1609,7 +1632,7 @@ async function handleScanResult(raw){
   stopScan();
   closeOverlay($('scanOverlay'));
   cargarEntregas(token);
-  mostrarSplashAgradecimiento(data, PUNTO_ACTUAL ? PUNTO_ACTUAL.nombre : '');
+  $('confirmMsg').innerHTML = `<div class="msg msg-ok">Entrega ${esc(data.codigo)} confirmada. Se avisará al donante.</div>`;
 }
 
 function mostrarSplashAgradecimiento(entrega, puntoNombre){
@@ -1678,8 +1701,9 @@ $('entregasList').addEventListener('click', async (e) => {
   const row = e.target.closest('.entrega-row');
   const token = $('savePunto').dataset.token;
   e.target.disabled = true; e.target.textContent = 'Guardando…';
-  const { error } = await sb.rpc('confirmar_entrega', {p_edit_token: token, p_id: row.dataset.id});
+  const { data, error } = await sb.rpc('confirmar_entrega', {p_edit_token: token, p_id: row.dataset.id});
   if(error){ e.target.disabled = false; e.target.textContent = 'Marcar recibido'; return; }
+  $('confirmMsg').innerHTML = `<div class="msg msg-ok">Entrega ${esc(data.codigo)} confirmada. Se avisará al donante.</div>`;
   cargarEntregas(token);
 });
 
