@@ -264,6 +264,16 @@
   .msg-ok{background:#E7F4EC;color:var(--green);}
   .msg-err{background:#FBEAEA;color:#B42318;}
 
+  /* ---------------- Panel de moderación ---------------- */
+  .admin-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 14px;margin-bottom:10px;}
+  .admin-row-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .admin-row-name{font-weight:600;font-size:14.5px;color:var(--ink);}
+  .admin-row-sub{font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  .admin-row-actions{display:flex;flex-wrap:wrap;gap:6px;}
+  .btn-mini{font-size:12px;font-weight:600;padding:6px 10px;border-radius:7px;border:1px solid var(--line-strong);background:var(--surface);color:var(--navy);cursor:pointer;white-space:nowrap;}
+  .btn-mini-danger{border-color:#E7B4AC;color:#B42318;}
+  .admin-edit-form{margin-top:13px;padding-top:13px;border-top:1px solid var(--line);}
+
   /* ---------------- Footer ---------------- */
   footer{border-top:1px solid var(--line);background:#F5F3EE;margin-top:14px;}
   .footer-in{max-width:var(--wrap);margin:0 auto;padding:28px 20px 40px;font-size:13px;color:var(--muted);line-height:1.6;}
@@ -390,6 +400,7 @@
       <p>Solo se almacenan los datos del establecimiento que cada punto decide publicar. No se recogen datos de las personas donantes. Para corregir o eliminar un punto, usa la opción «Actualizar mi punto» o escribe a la persona responsable que lo publicó.</p>
       <p>¿Sugerencias, un error en la página o cualquier otra consulta? <button type="button" class="contact-link" id="contactEmail">Escríbeme</button></p>
       <p>© 2026 · Hecho de forma solidaria. El contenido puede compartirse y reutilizarse libremente con fines de ayuda humanitaria.</p>
+      <p><button type="button" class="contact-link" id="openAdmin">Panel de administración</button></p>
     </div>
   </div>
 </footer>
@@ -557,6 +568,23 @@
       <div class="field"><label>Teléfono o WhatsApp de contacto</label><input id="u_contacto" type="tel" /></div>
       <button class="btn btn-primary panel-submit" id="savePunto">Guardar cambios</button>
       <div id="updMsg2"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="adminOverlay" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+  <div class="panel" style="max-width:760px;">
+    <div class="panel-head"><h2 id="adminTitle">Panel de moderación</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <div id="adminStep1">
+      <p class="panel-sub">Acceso restringido. Introduce el token de administrador.</p>
+      <div class="field"><label>Token de administrador</label><input id="admin_token" type="password" autocomplete="off" /></div>
+      <button class="btn btn-primary panel-submit" id="adminLogin">Entrar</button>
+      <div id="adminMsg1"></div>
+    </div>
+    <div id="adminStep2" style="display:none;">
+      <p class="panel-sub" id="adminCount"></p>
+      <div id="adminMsg2"></div>
+      <div id="adminList"></div>
     </div>
   </div>
 </div>
@@ -1027,6 +1055,156 @@ $('savePunto').addEventListener('click', async () => {
   if(error || data===false){ $('updMsg2').innerHTML = `<div class="msg msg-err">No se pudo guardar. Vuelve a intentarlo.</div>`; return; }
   $('updMsg2').innerHTML = `<div class="msg msg-ok">Cambios guardados. Gracias por mantenerlo al día.</div>`;
   cargar(); setTimeout(()=>closeOverlay($('updateOverlay')), 1200);
+});
+
+/* ---------- Panel de moderación ---------- */
+let adminToken = sessionStorage.getItem('admin_token') || null;
+let adminPuntos = [];
+
+function adminRowHTML(p){
+  return `
+  <div class="admin-row" data-id="${p.id}">
+    <div class="admin-row-head">
+      <div class="admin-row-info">
+        <div class="admin-row-name">${esc(p.nombre)}</div>
+        <div class="admin-row-sub">${esc(p.ciudad || '')}${p.provincia ? ' (' + esc(p.provincia) + ')' : ''}</div>
+        <div class="badges">${p.oficial ? '<span class="badge b-oficial">Oficial</span>' : ''}${estadoBadge(p.estado)}${p.verificado ? '<span class="badge b-verif">Verificado</span>' : '<span class="badge b-sinverif">Sin verificar</span>'}</div>
+      </div>
+      <div class="admin-row-actions">
+        <button type="button" class="btn-mini admin-toggle-verif">${p.verificado ? 'Quitar verificación' : 'Verificar'}</button>
+        <button type="button" class="btn-mini admin-toggle-oficial">${p.oficial ? 'Quitar oficial' : 'Marcar oficial'}</button>
+        <button type="button" class="btn-mini admin-edit">Editar</button>
+        <button type="button" class="btn-mini btn-mini-danger admin-delete">Eliminar</button>
+      </div>
+    </div>
+    <div class="admin-edit-form" style="display:none;">
+      <div class="field"><label>Nombre</label><input type="text" class="a_nombre" value="${esc(p.nombre || '')}" /></div>
+      <div class="field"><label>Dirección</label><input type="text" class="a_direccion" value="${esc(p.direccion || '')}" /></div>
+      <div class="field"><label>Ciudad</label><input type="text" class="a_ciudad" value="${esc(p.ciudad || '')}" /></div>
+      <div class="field"><label>Provincia</label><input type="text" class="a_provincia" value="${esc(p.provincia || '')}" /></div>
+      <div class="field"><label>Contacto</label><input type="text" class="a_contacto" value="${esc(p.contacto || '')}" /></div>
+      <div class="field"><label>WhatsApp</label><input type="text" class="a_whatsapp" value="${esc(p.whatsapp || '')}" /></div>
+      <div class="field"><label>Horario</label><input type="text" class="a_horario" value="${esc(p.horario || '')}" /></div>
+      <div class="field"><label>Necesidades</label><textarea class="a_necesidades">${esc(p.necesidades || '')}</textarea></div>
+      <div class="field"><label>Estado</label>
+        <select class="a_estado">
+          <option value="recibiendo" ${p.estado==='recibiendo'?'selected':''}>Recibiendo ayuda</option>
+          <option value="completo" ${p.estado==='completo'?'selected':''}>Completo por ahora</option>
+          <option value="pausado" ${p.estado==='pausado'?'selected':''}>Pausado / cerrado</option>
+        </select>
+      </div>
+      <button type="button" class="btn btn-primary panel-submit admin-save">Guardar cambios</button>
+      <button type="button" class="btn admin-cancel">Cancelar</button>
+      <div class="admin-edit-msg"></div>
+    </div>
+  </div>`;
+}
+
+function adminRenderList(){
+  $('adminList').innerHTML = adminPuntos.map(adminRowHTML).join('');
+  $('adminCount').textContent = `${adminPuntos.length} ${adminPuntos.length===1?'punto':'puntos'} en total`;
+}
+
+async function adminUpdatePunto(p, overrides){
+  const row = Object.assign({}, p, overrides);
+  const { data, error } = await sb.rpc('admin_actualizar_punto', {
+    p_token: adminToken, p_id: row.id, p_nombre: row.nombre, p_direccion: row.direccion,
+    p_ciudad: row.ciudad, p_provincia: row.provincia, p_contacto: row.contacto, p_whatsapp: row.whatsapp,
+    p_horario: row.horario, p_necesidades: row.necesidades, p_estado: row.estado,
+    p_verificado: row.verificado, p_oficial: row.oficial
+  });
+  return { data, error };
+}
+
+async function adminLoadList(){
+  const { data, error } = await sb.rpc('admin_listar_puntos', {p_token: adminToken});
+  if(error){
+    adminToken = null; sessionStorage.removeItem('admin_token');
+    $('adminStep1').style.display='block'; $('adminStep2').style.display='none';
+    $('adminMsg1').innerHTML = `<div class="msg msg-err">Token inválido o expirado.</div>`;
+    return false;
+  }
+  adminPuntos = data || [];
+  adminRenderList();
+  return true;
+}
+
+$('openAdmin').addEventListener('click', async () => {
+  $('adminMsg1').innerHTML=''; $('adminMsg2').innerHTML='';
+  openOverlay('adminOverlay');
+  if(adminToken){
+    $('adminStep1').style.display='none'; $('adminStep2').style.display='block';
+    await adminLoadList();
+  } else {
+    $('admin_token').value='';
+    $('adminStep1').style.display='block'; $('adminStep2').style.display='none';
+  }
+});
+
+$('adminLogin').addEventListener('click', async () => {
+  const token = $('admin_token').value.trim();
+  if(!token){ $('adminMsg1').innerHTML = `<div class="msg msg-err">Introduce el token.</div>`; return; }
+  if(!CONFIGURED){ $('adminMsg1').innerHTML = `<div class="msg msg-err">Conecta Supabase primero.</div>`; return; }
+  const btn = $('adminLogin'); btn.disabled=true; btn.textContent='Entrando…';
+  adminToken = token;
+  const ok = await adminLoadList();
+  btn.disabled=false; btn.textContent='Entrar';
+  if(!ok) return;
+  sessionStorage.setItem('admin_token', token);
+  $('adminStep1').style.display='none'; $('adminStep2').style.display='block';
+});
+
+$('adminList').addEventListener('click', async (e) => {
+  const row = e.target.closest('.admin-row');
+  if(!row) return;
+  const id = row.dataset.id;
+  const p = adminPuntos.find(x => String(x.id) === id);
+  if(!p) return;
+
+  if(e.target.classList.contains('admin-toggle-verif')){
+    e.target.disabled = true;
+    const { data, error } = await adminUpdatePunto(p, {verificado: !p.verificado});
+    if(error){ $('adminMsg2').innerHTML = `<div class="msg msg-err">No se pudo actualizar.</div>`; e.target.disabled=false; return; }
+    Object.assign(p, data); adminRenderList(); cargar();
+  } else if(e.target.classList.contains('admin-toggle-oficial')){
+    e.target.disabled = true;
+    const { data, error } = await adminUpdatePunto(p, {oficial: !p.oficial});
+    if(error){ $('adminMsg2').innerHTML = `<div class="msg msg-err">No se pudo actualizar.</div>`; e.target.disabled=false; return; }
+    Object.assign(p, data); adminRenderList(); cargar();
+  } else if(e.target.classList.contains('admin-edit')){
+    row.querySelector('.admin-edit-form').style.display = 'block';
+  } else if(e.target.classList.contains('admin-cancel')){
+    row.querySelector('.admin-edit-form').style.display = 'none';
+  } else if(e.target.classList.contains('admin-save')){
+    const form = row.querySelector('.admin-edit-form');
+    const overrides = {
+      nombre: form.querySelector('.a_nombre').value.trim(),
+      direccion: form.querySelector('.a_direccion').value.trim(),
+      ciudad: form.querySelector('.a_ciudad').value.trim(),
+      provincia: form.querySelector('.a_provincia').value.trim() || null,
+      contacto: form.querySelector('.a_contacto').value.trim(),
+      whatsapp: form.querySelector('.a_whatsapp').value.trim() || null,
+      horario: form.querySelector('.a_horario').value.trim(),
+      necesidades: form.querySelector('.a_necesidades').value.trim() || null,
+      estado: form.querySelector('.a_estado').value
+    };
+    const btn = e.target; btn.disabled = true; btn.textContent = 'Guardando…';
+    const { data, error } = await adminUpdatePunto(p, overrides);
+    btn.disabled = false; btn.textContent = 'Guardar cambios';
+    if(error){ form.querySelector('.admin-edit-msg').innerHTML = `<div class="msg msg-err">No se pudo guardar.</div>`; return; }
+    Object.assign(p, data); adminRenderList(); cargar();
+  } else if(e.target.classList.contains('admin-delete')){
+    if(e.target.dataset.confirm !== '1'){
+      e.target.dataset.confirm = '1'; e.target.textContent = '¿Seguro? Confirmar';
+      setTimeout(() => { e.target.dataset.confirm=''; e.target.textContent='Eliminar'; }, 4000);
+      return;
+    }
+    e.target.disabled = true;
+    const { error } = await sb.rpc('admin_eliminar_punto', {p_token: adminToken, p_id: p.id});
+    if(error){ $('adminMsg2').innerHTML = `<div class="msg msg-err">No se pudo eliminar.</div>`; e.target.disabled=false; return; }
+    adminPuntos = adminPuntos.filter(x => x.id !== p.id);
+    adminRenderList(); cargar();
+  }
 });
 
 /* ---------- Init ---------- */
