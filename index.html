@@ -285,6 +285,8 @@
   }
   .entregas-block{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);}
   .entregas-title{font-size:15px;font-weight:600;margin:0 0 4px;}
+  .entregas-export{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;}
+  .entregas-export input[type="date"]{font-size:12px;padding:6px 8px;border-radius:7px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);}
   .entrega-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:9px;}
   .entrega-row-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
   .entrega-codigo{font-family:'Space Grotesk';font-weight:700;font-size:13.5px;color:var(--navy-dark);}
@@ -611,6 +613,12 @@
       <div class="entregas-block">
         <h3 class="entregas-title">Entregas recibidas</h3>
         <p class="panel-sub" id="entregasCount"></p>
+        <div class="entregas-export">
+          <button type="button" class="btn-mini" id="exportAll">Exportar histórico (Excel)</button>
+          <input type="date" id="exportDate" />
+          <button type="button" class="btn-mini" id="exportDay">Exportar ese día</button>
+        </div>
+        <div id="exportMsg"></div>
         <div id="entregasList"></div>
       </div>
     </div>
@@ -1249,13 +1257,65 @@ function entregaRowHTML(e){
   </div>`;
 }
 
+let ENTREGAS_CACHE = [];
+
 async function cargarEntregas(token){
   const { data, error } = await sb.rpc('listar_entregas_punto', {p_edit_token: token});
-  if(error){ $('entregasCount').textContent = ''; $('entregasList').innerHTML = ''; return; }
+  if(error){ $('entregasCount').textContent = ''; $('entregasList').innerHTML = ''; ENTREGAS_CACHE = []; return; }
   const entregas = data || [];
+  ENTREGAS_CACHE = entregas;
   $('entregasCount').textContent = entregas.length ? `${entregas.length} ${entregas.length===1?'entrega registrada':'entregas registradas'}` : 'Aún no hay entregas registradas.';
   $('entregasList').innerHTML = entregas.map(entregaRowHTML).join('');
 }
+
+function csvCell(v){
+  const s = (v === null || v === undefined) ? '' : String(v);
+  return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function entregasToCSV(entregas){
+  const cabecera = ['Código', 'Fecha', 'Hora', 'Donante', 'Estado', 'Categoría', 'Cantidad', 'Unidad', 'Detalle'];
+  const filas = [cabecera];
+  entregas.forEach(e => {
+    const d = new Date(e.created_at);
+    const fecha = d.toLocaleDateString('es-ES');
+    const hora = d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+    const estado = e.estado === 'recibido' ? 'Recibido' : 'Pendiente';
+    const items = (e.items && e.items.length) ? e.items : [{categoria:'', cantidad:'', unidad:'', detalle:''}];
+    items.forEach(it => {
+      const cat = ITEM_CATEGORIAS.find(c => c.key === it.categoria);
+      filas.push([
+        e.codigo, fecha, hora, e.donante_nombre || '', estado,
+        cat ? cat.label : (it.categoria || ''), it.cantidad ?? '', it.unidad || '', it.detalle || ''
+      ]);
+    });
+  });
+  return '﻿' + filas.map(f => f.map(csvCell).join(';')).join('\r\n');
+}
+
+function descargarCSV(nombre, contenido){
+  const blob = new Blob([contenido], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+$('exportAll').addEventListener('click', () => {
+  if(!ENTREGAS_CACHE.length){ $('exportMsg').innerHTML = `<div class="msg msg-err">Aún no hay entregas que exportar.</div>`; return; }
+  $('exportMsg').innerHTML = '';
+  descargarCSV(`entregas-historico-${new Date().toISOString().slice(0,10)}.csv`, entregasToCSV(ENTREGAS_CACHE));
+});
+
+$('exportDay').addEventListener('click', () => {
+  const fechaSel = $('exportDate').value;
+  if(!fechaSel){ $('exportMsg').innerHTML = `<div class="msg msg-err">Elige primero un día.</div>`; return; }
+  const filtradas = ENTREGAS_CACHE.filter(e => new Date(e.created_at).toLocaleDateString('en-CA') === fechaSel);
+  if(!filtradas.length){ $('exportMsg').innerHTML = `<div class="msg msg-err">No hay entregas registradas ese día.</div>`; return; }
+  $('exportMsg').innerHTML = '';
+  descargarCSV(`entregas-${fechaSel}.csv`, entregasToCSV(filtradas));
+});
 
 $('entregasList').addEventListener('click', async (e) => {
   if(!e.target.classList.contains('entrega-confirmar')) return;
