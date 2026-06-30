@@ -327,6 +327,21 @@
   .ticket-label .tl-row b{color:var(--muted);font-weight:600;}
   .ticket-label .tl-items{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
   .ticket-label .tl-item{font-size:13.5px;padding:3px 0;}
+  .ticket-qr-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;}
+  .ticket-qr-wrap canvas{border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px;background:#fff;}
+  .ticket-qr-hint{font-size:12px;color:var(--muted);text-align:center;}
+
+  /* Escaneo de entregas */
+  .scan-wrap{position:relative;width:100%;max-width:340px;aspect-ratio:1/1;margin:10px auto;border-radius:var(--radius-sm);overflow:hidden;background:#15171b;}
+  .scan-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
+  .scan-hint{font-size:12.5px;color:var(--muted);text-align:center;margin-top:4px;}
+
+  /* Splash de agradecimiento */
+  .thanks-panel{text-align:center;}
+  .thanks-body{display:flex;flex-direction:column;align-items:center;gap:12px;padding:10px 0 4px;}
+  .thanks-icon{width:62px;height:62px;padding:14px;border-radius:50%;background:#E7F4EC;color:var(--green);}
+  .thanks-msg{font-size:15px;line-height:1.5;color:var(--ink);max-width:380px;}
+  .thanks-details{width:100%;border:1px dashed var(--line-strong);border-radius:var(--radius-sm);padding:14px 16px;text-align:left;}
   @media print{
     body *{visibility:hidden;}
     .ticket-label,.ticket-label *{visibility:visible;}
@@ -651,9 +666,9 @@
         <li>Revisa su estado («Recibiendo», «Completo» o «Pausado») y qué necesita en este momento.</li>
         <li>Confirma siempre antes por teléfono o WhatsApp que el punto sigue activo y qué admite.</li>
         <li>En la tarjeta del centro, pulsa «Donar a este centro» y marca lo que vas a llevar.</li>
-        <li>Genera el ticket de entrega: es una etiqueta para identificar tu donación, no un comprobante legal.</li>
-        <li>Imprime o muestra el ticket y entrégalo junto con tu donación en el punto de acopio.</li>
-        <li>El centro marcará la entrega como recibida cuando la reciba.</li>
+        <li>Genera el ticket de entrega: incluye un código QR único. Puedes imprimirlo, descargarlo como imagen o mostrarlo directamente desde el móvil.</li>
+        <li>Lleva tu donación junto con el ticket (en papel o en pantalla) al punto de acopio.</li>
+        <li>El centro escaneará el código QR con su cámara: en ese momento verás en pantalla un mensaje de agradecimiento con los detalles de tu entrega ya confirmada.</li>
       </ol>
     </div>
 
@@ -664,7 +679,8 @@
         <li>Guarda bien el código de gestión que se genera: es la única forma de editar tu punto después.</li>
         <li>Usa «Actualizar punto» con tu código para cambiar el estado, las necesidades o el horario en cualquier momento.</li>
         <li>Desde «Actualizar punto» puedes ver el listado de «Entregas recibidas» con los tickets generados por donantes.</li>
-        <li>Marca cada entrega como «Recibida» cuando llegue físicamente a tu centro.</li>
+        <li>Pulsa «Escanear entregas (QR)» y apunta la cámara al código del ticket de cada donante: se confirmará como recibida automáticamente, sin buscarla a mano.</li>
+        <li>Si no puedes escanear el código, también puedes marcar la entrega como «Recibida» manualmente desde la lista.</li>
         <li>Exporta el histórico completo o por día en Excel para llevar el control de stock y gestión.</li>
         <li>Mantén tu punto actualizado: una información correcta evita desplazamientos innecesarios a los donantes.</li>
       </ol>
@@ -737,6 +753,7 @@
         <h3 class="entregas-title">Entregas recibidas</h3>
         <p class="panel-sub" id="entregasCount"></p>
         <div class="entregas-export">
+          <button type="button" class="btn-mini" id="openScan">Escanear entregas (QR)</button>
           <button type="button" class="btn-mini" id="exportAll">Exportar histórico (Excel)</button>
           <input type="date" id="exportDate" />
           <button type="button" class="btn-mini" id="exportDay">Exportar ese día</button>
@@ -753,7 +770,35 @@
   <div class="panel" style="max-width:640px;">
     <div class="panel-head"><h2 id="ticketTitle">Ticket de entrega generado</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
     <div class="ticket-label" id="ticketLabel"></div>
+    <div class="ticket-qr-wrap">
+      <canvas id="ticketQR"></canvas>
+      <p class="ticket-qr-hint">Muestra este código al entregar tu donación: el centro lo escaneará para confirmar la entrega al instante.</p>
+    </div>
     <button class="btn btn-primary panel-submit" id="t_print">Imprimir etiqueta</button>
+    <button class="btn panel-submit" id="t_download">Descargar imagen del ticket</button>
+  </div>
+</div>
+
+<!-- ============ ESCANEAR ENTREGAS ============ -->
+<div class="overlay" id="scanOverlay" role="dialog" aria-modal="true" aria-labelledby="scanTitle">
+  <div class="panel">
+    <div class="panel-head"><h2 id="scanTitle">Escanear entregas</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <p class="panel-sub">Apunta la cámara al código QR del ticket que te entregan: la entrega se confirmará automáticamente.</p>
+    <div class="scan-wrap"><video id="scanVideo" playsinline muted></video></div>
+    <p class="scan-hint">Necesitamos permiso de cámara solo para leer el código QR. No se guarda ninguna imagen.</p>
+    <div id="scanMsg"></div>
+  </div>
+</div>
+
+<!-- ============ AGRADECIMIENTO ============ -->
+<div class="overlay" id="thanksOverlay" role="dialog" aria-modal="true" aria-labelledby="thanksTitle">
+  <div class="panel thanks-panel">
+    <div class="panel-head"><h2 id="thanksTitle">¡Gracias por tu ayuda!</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <div class="thanks-body">
+      <svg class="thanks-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+      <p class="thanks-msg">Tu entrega ha sido confirmada. En nombre de las personas afectadas por los terremotos de Venezuela, ¡gracias por tu solidaridad!</p>
+      <div class="thanks-details" id="thanksDetails"></div>
+    </div>
   </div>
 </div>
 
@@ -776,6 +821,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 /* ============================================================
    CONFIGURACIÓN  ·  rellena con tu proyecto de Supabase
@@ -1245,6 +1292,7 @@ $('loadPunto').addEventListener('click', async () => {
   btn.disabled=false; btn.textContent='Buscar mi punto';
   if(error || !data || !data.length){ $('updMsg1').innerHTML = `<div class="msg msg-err">Código no encontrado. Revisa que esté bien copiado.</div>`; return; }
   const p = data[0];
+  PUNTO_ACTUAL = p;
   $('u_estado').value = p.estado || 'recibiendo'; $('u_necesidades').value = p.necesidades || ''; $('u_horario').value = p.horario || ''; $('u_contacto').value = p.contacto || '';
   $('updStep1').style.display='none'; $('updStep2').style.display='block'; $('savePunto').dataset.token = token;
   cargarEntregas(token);
@@ -1337,6 +1385,8 @@ $('list').addEventListener('click', async (e) => {
     if(error){ console.error(error); msg.innerHTML = `<div class="msg msg-err">No se pudo generar el ticket. Revisa las políticas RLS.</div>`; return; }
     const punto = PUNTOS.find(p => p.id === puntoId);
     $('ticketLabel').innerHTML = ticketLabelHTML(row, punto ? punto.nombre : '');
+    CURRENT_TICKET = {entrega: row, puntoNombre: punto ? punto.nombre : ''};
+    QRCode.toCanvas($('ticketQR'), JSON.stringify({id: row.id, codigo: row.codigo}), {width: 200, margin: 1}, (err) => { if(err) console.error(err); });
     msg.innerHTML = '';
     panel.querySelectorAll('.item-row').forEach(row => {
       row.querySelector('.t_cat_chk').checked = false;
@@ -1360,7 +1410,60 @@ $('list').addEventListener('change', (e) => {
   fields.classList.toggle('open', e.target.checked);
 });
 
+let CURRENT_TICKET = null;
+
 $('t_print').addEventListener('click', () => window.print());
+
+async function construirImagenTicket(entrega, puntoNombre){
+  const qrDataUrl = await QRCode.toDataURL(JSON.stringify({id: entrega.id, codigo: entrega.codigo}), {width: 220, margin: 1});
+  const qrImg = new Image();
+  await new Promise((resolve, reject) => { qrImg.onload = resolve; qrImg.onerror = reject; qrImg.src = qrDataUrl; });
+  const itemsLines = entrega.items.map(it => {
+    const cat = ITEM_CATEGORIAS.find(c => c.key === it.categoria);
+    const cant = it.cantidad ? `${it.cantidad} ${it.unidad}` : '';
+    return `• ${cat ? cat.label : it.categoria}${cant ? ' — ' + cant : ''}${it.detalle ? ' (' + it.detalle + ')' : ''}`;
+  });
+  const fecha = new Date(entrega.created_at || Date.now()).toLocaleString('es-ES', {dateStyle: 'medium', timeStyle: 'short'});
+  const W = 380, qrSize = 220, lineH = 20, pad = 24;
+  let headerLines = 2;
+  if(entrega.donante_nombre) headerLines++;
+  const H = 50 + headerLines * 22 + 16 + qrSize + 30 + itemsLines.length * lineH + 36;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FBFAF7'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#D8D4CA'; ctx.lineWidth = 2; ctx.strokeRect(6, 6, W - 12, H - 12);
+  let y = 38;
+  ctx.fillStyle = '#1E3A5F'; ctx.font = 'bold 20px Inter, sans-serif'; ctx.fillText(entrega.codigo, pad, y); y += 30;
+  ctx.fillStyle = '#16181D'; ctx.font = '14px Inter, sans-serif';
+  ctx.fillText('Centro: ' + puntoNombre, pad, y); y += 22;
+  ctx.fillText('Fecha: ' + fecha, pad, y); y += 22;
+  if(entrega.donante_nombre){ ctx.fillText('Entrega: ' + entrega.donante_nombre, pad, y); y += 22; }
+  y += 6;
+  ctx.drawImage(qrImg, (W - qrSize) / 2, y, qrSize, qrSize);
+  y += qrSize + 28;
+  ctx.font = '13px Inter, sans-serif'; ctx.fillStyle = '#5E6168';
+  itemsLines.forEach(line => { ctx.fillText(line, pad, y); y += lineH; });
+  ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = '#8A8D94';
+  ctx.fillText('Escanea este código al entregar para confirmar la recepción.', pad, H - 16);
+  return canvas;
+}
+
+$('t_download').addEventListener('click', async () => {
+  if(!CURRENT_TICKET) return;
+  const btn = $('t_download'); btn.disabled = true; btn.textContent = 'Generando…';
+  try {
+    const canvas = await construirImagenTicket(CURRENT_TICKET.entrega, CURRENT_TICKET.puntoNombre);
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = `ticket-${CURRENT_TICKET.entrega.codigo}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+  } catch(err){
+    console.error(err);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Descargar imagen del ticket';
+  }
+});
 
 /* ---------- Entregas (vista del centro) ---------- */
 function entregaRowHTML(e){
@@ -1385,6 +1488,7 @@ function entregaRowHTML(e){
 }
 
 let ENTREGAS_CACHE = [];
+let PUNTO_ACTUAL = null;
 
 async function cargarEntregas(token){
   const { data, error } = await sb.rpc('listar_entregas_punto', {p_edit_token: token});
@@ -1394,6 +1498,75 @@ async function cargarEntregas(token){
   $('entregasCount').textContent = entregas.length ? `${entregas.length} ${entregas.length===1?'entrega registrada':'entregas registradas'}` : 'Aún no hay entregas registradas.';
   $('entregasList').innerHTML = entregas.map(entregaRowHTML).join('');
 }
+
+/* ---------- Escanear entregas (QR) ---------- */
+let scanStream = null;
+let scanRAF = null;
+let scanBusy = false;
+
+function scanTick(){
+  const video = $('scanVideo');
+  if(video.readyState === video.HAVE_ENOUGH_DATA && !scanBusy){
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if(code && code.data){ scanBusy = true; handleScanResult(code.data); }
+  }
+  scanRAF = requestAnimationFrame(scanTick);
+}
+
+async function startScan(){
+  $('scanMsg').innerHTML = '';
+  scanBusy = false;
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}});
+  } catch(err){
+    $('scanMsg').innerHTML = `<div class="msg msg-err">No se pudo acceder a la cámara. Revisa los permisos del navegador.</div>`;
+    return;
+  }
+  const video = $('scanVideo');
+  video.srcObject = scanStream;
+  await video.play();
+  scanRAF = requestAnimationFrame(scanTick);
+}
+
+function stopScan(){
+  if(scanRAF) cancelAnimationFrame(scanRAF);
+  scanRAF = null;
+  if(scanStream){ scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  $('scanVideo').srcObject = null;
+}
+
+async function handleScanResult(raw){
+  let payload;
+  try { payload = JSON.parse(raw); } catch(err){ payload = {id: raw}; }
+  const token = $('savePunto').dataset.token;
+  const { data, error } = await sb.rpc('confirmar_entrega', {p_edit_token: token, p_id: payload.id});
+  if(error || !data){
+    $('scanMsg').innerHTML = `<div class="msg msg-err">Código no reconocido o ya confirmado. Sigue escaneando.</div>`;
+    scanBusy = false;
+    return;
+  }
+  stopScan();
+  closeOverlay($('scanOverlay'));
+  cargarEntregas(token);
+  mostrarSplashAgradecimiento(data, PUNTO_ACTUAL ? PUNTO_ACTUAL.nombre : '');
+}
+
+function mostrarSplashAgradecimiento(entrega, puntoNombre){
+  const fecha = new Date(entrega.confirmado_at || Date.now()).toLocaleString('es-ES', {dateStyle: 'medium', timeStyle: 'short'});
+  $('thanksDetails').innerHTML = `
+    <div class="tl-row"><b>Centro:</b> ${esc(puntoNombre || '')}</div>
+    <div class="tl-row"><b>Código:</b> ${esc(entrega.codigo)}</div>
+    <div class="tl-row"><b>Confirmado:</b> ${esc(fecha)}</div>`;
+  openOverlay('thanksOverlay');
+}
+
+$('openScan').addEventListener('click', () => { openOverlay('scanOverlay'); startScan(); });
+$('scanOverlay').addEventListener('click', (e) => { if(e.target === $('scanOverlay') || e.target.closest('[data-close]')) stopScan(); });
 
 function csvCell(v){
   const s = (v === null || v === undefined) ? '' : String(v);
