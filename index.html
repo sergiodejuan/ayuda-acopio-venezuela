@@ -211,6 +211,12 @@
   .freshness svg{width:13px;height:13px;}
 
   .card-actions{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap;}
+  .btn-donate{width:100%;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:700;padding:13px 12px;background:var(--green);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(21,128,61,.28);}
+  .btn-donate:hover{background:#11692f;}
+  .btn-donate svg{width:18px;height:18px;flex:0 0 auto;}
+  .btn-donate[aria-expanded="true"]{background:#11692f;}
+  .donate-panel{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-strong);}
+  .donate-panel[hidden]{display:none;}
   .chip{flex:1 1 auto;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;padding:10px 8px;text-decoration:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);}
   .chip:hover{border-color:var(--navy);}
   .chip svg{width:15px;height:15px;flex:0 0 auto;}
@@ -267,11 +273,16 @@
   /* ---------------- Ticket de entrega ---------------- */
   .item-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;}
   .item-row-head{display:flex;align-items:center;gap:8px;}
-  .item-row-head label{font-size:14px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;cursor:pointer;margin:0;}
-  .item-row-fields{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px;}
+  .item-row-head label{font-size:14px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:10px;cursor:pointer;margin:0;}
+  .item-row-head input[type="checkbox"]{flex:0 0 18px;width:18px;height:18px;margin:0;accent-color:var(--navy);}
+  .item-row-fields{display:none;grid-template-columns:1fr;gap:8px;margin-top:9px;}
   .item-row-fields.open{display:grid;}
   .item-row-fields .field{margin-bottom:0;grid-column:span 1;}
-  .item-row-fields .field.full{grid-column:span 2;}
+  .item-row-fields .field.full{grid-column:span 1;}
+  @media(min-width:480px){
+    .item-row-fields{grid-template-columns:1fr 1fr;}
+    .item-row-fields .field.full{grid-column:span 2;}
+  }
   .entregas-block{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);}
   .entregas-title{font-size:15px;font-weight:600;margin:0 0 4px;}
   .entrega-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:9px;}
@@ -366,10 +377,6 @@
       <button class="hbtn hbtn-ghost" id="openUpdate">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-2.6-6.4M21 4v5h-5"/></svg>
         Actualizar punto
-      </button>
-      <button class="hbtn hbtn-ghost" id="openTicket">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 000 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a2 2 0 000-4V9Z"/><path d="M9 7v12"/></svg>
-        Generar ticket de entrega
       </button>
     </div>
   </div>
@@ -613,24 +620,9 @@
 <!-- ============ TICKET DE ENTREGA ============ -->
 <div class="overlay" id="ticketOverlay" role="dialog" aria-modal="true" aria-labelledby="ticketTitle">
   <div class="panel" style="max-width:640px;">
-    <div class="panel-head"><h2 id="ticketTitle">Generar ticket de entrega</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
-    <div id="ticketStep1">
-      <p class="panel-sub">Elige el centro al que vas a llevar tu donación y detalla lo que entregas. Al final podrás imprimir una etiqueta para tu caja o bolsa.</p>
-      <div class="field"><label>Centro de acopio</label>
-        <select id="t_punto"><option value="">Selecciona un centro…</option></select>
-      </div>
-      <div class="field"><label>Tu nombre <span class="hint">(opcional)</span></label><input id="t_donante" type="text" placeholder="Para que el centro sepa quién entrega" /></div>
-      <div class="field"><label>¿Qué entregas?</label>
-        <div id="t_items"></div>
-      </div>
-      <button class="btn btn-primary panel-submit" id="t_submit">Generar ticket</button>
-      <div id="ticketMsg1"></div>
-    </div>
-    <div id="ticketStep2" style="display:none;">
-      <div class="ticket-label" id="ticketLabel"></div>
-      <button class="btn btn-primary panel-submit" id="t_print">Imprimir etiqueta</button>
-      <button class="btn panel-submit" id="t_nuevo" style="margin-top:8px;">Generar otro ticket</button>
-    </div>
+    <div class="panel-head"><h2 id="ticketTitle">Ticket de entrega generado</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <div class="ticket-label" id="ticketLabel"></div>
+    <button class="btn btn-primary panel-submit" id="t_print">Imprimir etiqueta</button>
   </div>
 </div>
 
@@ -760,7 +752,7 @@ function cardHTML(p){
     ? `<span class="dist-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>${p._dist < 1 ? Math.round(p._dist*1000) + ' m' : p._dist.toFixed(1) + ' km'}</span>`
     : '';
   return `
-  <article class="card ${p.oficial ? 'card-oficial' : ''}">
+  <article class="card ${p.oficial ? 'card-oficial' : ''}" data-id="${p.id}">
     <div class="card-head">
       <h3 class="card-name">${esc(p.nombre)}</h3>
       <div class="badges">${oficial}${estadoBadge(p.estado)}${verif}${dist}</div>
@@ -783,10 +775,23 @@ function cardHTML(p){
       <a class="chip" href="${mapsLink(p)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>Cómo llegar</a>
       <a class="chip" href="${waSharePoint(p)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a1 1 0 001 1h14a1 1 0 001-1v-8"/><path d="M16 6l-4-4-4 4M12 2v13"/></svg>Compartir</a>
     </div>
+    <button class="btn-donate" type="button" data-donate-toggle aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8Z"/></svg>
+      <span class="d_toggle_label">Donar a este centro</span>
+    </button>
+    <div class="donate-panel" data-donate-panel hidden>
+      <p class="panel-sub">Detalla lo que vas a entregar. Al terminar podrás imprimir una etiqueta para tu caja o bolsa.</p>
+      <div class="field"><label>Tu nombre <span class="hint">(opcional)</span></label><input type="text" class="d_donante" placeholder="Para que el centro sepa quién entrega" /></div>
+      <div class="field"><label>¿Qué entregas?</label>
+        <div class="d_items">${itemRowsHTML()}</div>
+      </div>
+      <button class="btn btn-primary panel-submit d_submit" type="button">Generar ticket</button>
+      <div class="d_msg"></div>
+    </div>
   </article>`;
 }
 
-const DEMO = {nombre:'Asociación Amigos Canario-Venezolanos', direccion:'Calle Ejemplo 12', ciudad:'Las Palmas', provincia:'Las Palmas', contacto:'+34 600 000 000', whatsapp:'+34600000000', horario:'L-V 10:00–14:00 y 17:00–20:00', necesidades:'Agua embotellada, leche en polvo, pañales y kits de higiene. No se necesita ropa por ahora.', estado:'recibiendo', verificado:true, updated_at:new Date(Date.now()-3*36e5).toISOString()};
+const DEMO = {id:'demo', nombre:'Asociación Amigos Canario-Venezolanos', direccion:'Calle Ejemplo 12', ciudad:'Las Palmas', provincia:'Las Palmas', contacto:'+34 600 000 000', whatsapp:'+34600000000', horario:'L-V 10:00–14:00 y 17:00–20:00', necesidades:'Agua embotellada, leche en polvo, pañales y kits de higiene. No se necesita ropa por ahora.', estado:'recibiendo', verificado:true, updated_at:new Date(Date.now()-3*36e5).toISOString()};
 
 function setHeroStatus(){
   if(!CONFIGURED){ $('heroStatus').textContent = 'Vista de ejemplo — conecta Supabase'; return; }
@@ -1147,27 +1152,6 @@ function itemRowsHTML(){
     </div>`).join('');
 }
 
-function poblarSelectorPuntos(){
-  const sel = $('t_punto');
-  sel.innerHTML = '<option value="">Selecciona un centro…</option>' +
-    PUNTOS.map(p => `<option value="${p.id}">${esc(p.nombre)}${p.ciudad ? ' — ' + esc(p.ciudad) : ''}</option>`).join('');
-}
-
-$('openTicket').addEventListener('click', () => {
-  $('t_items').innerHTML = itemRowsHTML();
-  poblarSelectorPuntos();
-  $('t_donante').value = '';
-  $('ticketMsg1').innerHTML = '';
-  $('ticketStep1').style.display = 'block'; $('ticketStep2').style.display = 'none';
-  openOverlay('ticketOverlay');
-});
-
-$('t_items').addEventListener('change', (e) => {
-  if(!e.target.classList.contains('t_cat_chk')) return;
-  const fields = e.target.closest('.item-row').querySelector('.item-row-fields');
-  fields.classList.toggle('open', e.target.checked);
-});
-
 function ticketLabelHTML(entrega, puntoNombre){
   const fecha = new Date(entrega.created_at || Date.now()).toLocaleString('es-ES', {dateStyle:'medium', timeStyle:'short'});
   const items = entrega.items.map(it => {
@@ -1183,36 +1167,65 @@ function ticketLabelHTML(entrega, puntoNombre){
     <div class="tl-items">${items}</div>`;
 }
 
-$('t_submit').addEventListener('click', async () => {
-  const puntoId = $('t_punto').value;
-  if(!puntoId){ $('ticketMsg1').innerHTML = `<div class="msg msg-err">Selecciona un centro de acopio.</div>`; return; }
-  if(!CONFIGURED){ $('ticketMsg1').innerHTML = `<div class="msg msg-err">Conecta Supabase primero.</div>`; return; }
-  const items = [];
-  $('t_items').querySelectorAll('.item-row').forEach(row => {
-    if(!row.querySelector('.t_cat_chk').checked) return;
-    items.push({
-      categoria: row.dataset.cat,
-      cantidad: row.querySelector('.t_cat_cant').value ? Number(row.querySelector('.t_cat_cant').value) : null,
-      unidad: row.querySelector('.t_cat_unidad').value,
-      detalle: row.querySelector('.t_cat_detalle').value.trim() || null
+$('list').addEventListener('click', async (e) => {
+  const toggleBtn = e.target.closest('[data-donate-toggle]');
+  if(toggleBtn){
+    const panel = toggleBtn.parentElement.querySelector('[data-donate-panel]');
+    const open = panel.hasAttribute('hidden');
+    panel.toggleAttribute('hidden', !open);
+    toggleBtn.setAttribute('aria-expanded', String(open));
+    toggleBtn.querySelector('.d_toggle_label').textContent = open ? 'Cancelar donación' : 'Donar a este centro';
+    return;
+  }
+  const submitBtn = e.target.closest('.d_submit');
+  if(submitBtn){
+    const card = submitBtn.closest('.card');
+    const panel = submitBtn.closest('.donate-panel');
+    const msg = panel.querySelector('.d_msg');
+    const puntoId = card.dataset.id;
+    if(!CONFIGURED){ msg.innerHTML = `<div class="msg msg-err">Conecta Supabase primero.</div>`; return; }
+    const items = [];
+    panel.querySelectorAll('.item-row').forEach(row => {
+      if(!row.querySelector('.t_cat_chk').checked) return;
+      items.push({
+        categoria: row.dataset.cat,
+        cantidad: row.querySelector('.t_cat_cant').value ? Number(row.querySelector('.t_cat_cant').value) : null,
+        unidad: row.querySelector('.t_cat_unidad').value,
+        detalle: row.querySelector('.t_cat_detalle').value.trim() || null
+      });
     });
-  });
-  if(!items.length){ $('ticketMsg1').innerHTML = `<div class="msg msg-err">Marca al menos un tipo de donativo.</div>`; return; }
-  const btn = $('t_submit'); btn.disabled = true; btn.textContent = 'Generando…';
-  const row = {punto_id: puntoId, codigo: genCodigo(), donante_nombre: $('t_donante').value.trim() || null, items, estado: 'pendiente'};
-  const { data, error } = await sb.from('entregas').insert(row).select().single();
-  btn.disabled = false; btn.textContent = 'Generar ticket';
-  if(error){ console.error(error); $('ticketMsg1').innerHTML = `<div class="msg msg-err">No se pudo generar el ticket. Revisa las políticas RLS.</div>`; return; }
-  const punto = PUNTOS.find(p => p.id === puntoId);
-  $('ticketLabel').innerHTML = ticketLabelHTML(data, punto ? punto.nombre : '');
-  $('ticketStep1').style.display = 'none'; $('ticketStep2').style.display = 'block';
+    if(!items.length){ msg.innerHTML = `<div class="msg msg-err">Marca al menos un tipo de donativo.</div>`; return; }
+    submitBtn.disabled = true; submitBtn.textContent = 'Generando…';
+    const row = {punto_id: puntoId, codigo: genCodigo(), donante_nombre: panel.querySelector('.d_donante').value.trim() || null, items, estado: 'pendiente'};
+    const { data, error } = await sb.from('entregas').insert(row).select().single();
+    submitBtn.disabled = false; submitBtn.textContent = 'Generar ticket';
+    if(error){ console.error(error); msg.innerHTML = `<div class="msg msg-err">No se pudo generar el ticket. Revisa las políticas RLS.</div>`; return; }
+    const punto = PUNTOS.find(p => p.id === puntoId);
+    $('ticketLabel').innerHTML = ticketLabelHTML(data, punto ? punto.nombre : '');
+    msg.innerHTML = '';
+    panel.querySelectorAll('.item-row').forEach(row => {
+      row.querySelector('.t_cat_chk').checked = false;
+      row.querySelector('.item-row-fields').classList.remove('open');
+      row.querySelector('.t_cat_cant').value = '';
+      row.querySelector('.t_cat_detalle').value = '';
+    });
+    panel.querySelector('.d_donante').value = '';
+    panel.setAttribute('hidden', '');
+    const toggle = card.querySelector('[data-donate-toggle]');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.querySelector('.d_toggle_label').textContent = 'Donar a este centro';
+    openOverlay('ticketOverlay');
+    return;
+  }
 });
+
+$('list').addEventListener('change', (e) => {
+  if(!e.target.classList.contains('t_cat_chk')) return;
+  const fields = e.target.closest('.item-row').querySelector('.item-row-fields');
+  fields.classList.toggle('open', e.target.checked);
+});
+
 $('t_print').addEventListener('click', () => window.print());
-$('t_nuevo').addEventListener('click', () => {
-  $('t_items').innerHTML = itemRowsHTML();
-  $('t_donante').value = ''; $('ticketMsg1').innerHTML = '';
-  $('ticketStep1').style.display = 'block'; $('ticketStep2').style.display = 'none';
-});
 
 /* ---------- Entregas (vista del centro) ---------- */
 function entregaRowHTML(e){
