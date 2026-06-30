@@ -1196,12 +1196,12 @@ $('list').addEventListener('click', async (e) => {
     });
     if(!items.length){ msg.innerHTML = `<div class="msg msg-err">Marca al menos un tipo de donativo.</div>`; return; }
     submitBtn.disabled = true; submitBtn.textContent = 'Generando…';
-    const row = {punto_id: puntoId, codigo: genCodigo(), donante_nombre: panel.querySelector('.d_donante').value.trim() || null, items, estado: 'pendiente'};
-    const { data, error } = await sb.from('entregas').insert(row).select().single();
+    const row = {id: crypto.randomUUID(), punto_id: puntoId, codigo: genCodigo(), donante_nombre: panel.querySelector('.d_donante').value.trim() || null, items, estado: 'pendiente', created_at: new Date().toISOString()};
+    const { error } = await sb.from('entregas').insert(row);
     submitBtn.disabled = false; submitBtn.textContent = 'Generar ticket';
     if(error){ console.error(error); msg.innerHTML = `<div class="msg msg-err">No se pudo generar el ticket. Revisa las políticas RLS.</div>`; return; }
     const punto = PUNTOS.find(p => p.id === puntoId);
-    $('ticketLabel').innerHTML = ticketLabelHTML(data, punto ? punto.nombre : '');
+    $('ticketLabel').innerHTML = ticketLabelHTML(row, punto ? punto.nombre : '');
     msg.innerHTML = '';
     panel.querySelectorAll('.item-row').forEach(row => {
       row.querySelector('.t_cat_chk').checked = false;
