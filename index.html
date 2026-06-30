@@ -40,7 +40,7 @@
 
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden;}
   body{
     background:var(--bg);color:var(--ink);
     font-family:'Inter',system-ui,-apple-system,sans-serif;
@@ -72,6 +72,14 @@
   .appbar.solid .hbtn-official{background:var(--surface);border-color:var(--line-strong);color:var(--navy);}
   .hbtn-official:hover{background:rgba(255,255,255,.22);}
   .appbar.solid .hbtn-official:hover{background:var(--amber-soft);}
+  @media(max-width:480px){
+    .appbar .inner{padding:11px 14px;gap:8px;}
+    .brand-sub{display:none;}
+    .header-actions{gap:6px;}
+    .share-top span,.hbtn-official span{display:none;}
+    .share-top,.hbtn-official{padding:9px 10px;gap:0;}
+    .share-top svg,.hbtn-official svg{width:16px;height:16px;}
+  }
 
   /* Modal de canales oficiales */
   .official-list{display:flex;flex-direction:column;gap:12px;margin-top:6px;}
@@ -226,8 +234,8 @@
   .material-chip,.dia-chip{font-size:12.5px;font-weight:500;padding:6px 11px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--muted);cursor:pointer;}
   .dia-chip{padding:6px 10px;min-width:34px;text-align:center;}
   .material-chip.active,.dia-chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
-  .horas-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-  .horas-row input[type="time"]{width:auto;flex:0 0 auto;}
+  .horas-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+  .horas-row input[type="time"]{width:auto;flex:1 1 100px;min-width:0;}
   .horas-row span{color:var(--faint);}
   .link-btn{background:none;border:none;padding:0;font:inherit;font-size:12.5px;font-weight:600;color:var(--navy);text-decoration:underline;cursor:pointer;margin-left:4px;}
   .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
@@ -276,11 +284,11 @@
     <div class="header-actions">
       <button class="hbtn-official" id="openOfficial" type="button" aria-label="Canales oficiales de contacto en España">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L3 7v2c0 6 4 9 9 13 5-4 9-7 9-13V7l-9-5Z"/><path d="M9 12l2 2 4-4"/></svg>
-        Canales oficiales
+        <span>Canales oficiales</span>
       </button>
       <a class="share-top" id="sharePlatform" href="#" aria-label="Compartir esta lista por WhatsApp">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.69-6.16a11.87 11.87 0 01-1.6-5.95C.16 5.34 5.5 0 12.06 0a11.8 11.8 0 018.4 3.49 11.78 11.78 0 013.48 8.4c0 6.55-5.34 11.89-11.9 11.89a11.9 11.9 0 01-5.68-1.45L.06 24zm6.6-3.8c1.68.99 3.28 1.59 5.4 1.59 5.45 0 9.9-4.43 9.9-9.89A9.86 9.86 0 0012.06 2 9.9 9.9 0 002.16 11.9c0 2.22.65 3.88 1.74 5.62l-1 3.66 3.76-.98z"/></svg>
-        Compartir esta lista
+        <span>Compartir esta lista</span>
       </a>
     </div>
   </div>
