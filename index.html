@@ -264,6 +264,35 @@
   .msg-ok{background:#E7F4EC;color:var(--green);}
   .msg-err{background:#FBEAEA;color:#B42318;}
 
+  /* ---------------- Ticket de entrega ---------------- */
+  .item-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;}
+  .item-row-head{display:flex;align-items:center;gap:8px;}
+  .item-row-head label{font-size:14px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;cursor:pointer;margin:0;}
+  .item-row-fields{display:none;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px;}
+  .item-row-fields.open{display:grid;}
+  .item-row-fields .field{margin-bottom:0;grid-column:span 1;}
+  .item-row-fields .field.full{grid-column:span 2;}
+  .entregas-block{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);}
+  .entregas-title{font-size:15px;font-weight:600;margin:0 0 4px;}
+  .entrega-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;margin-bottom:9px;}
+  .entrega-row-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .entrega-codigo{font-family:'Space Grotesk';font-weight:700;font-size:13.5px;color:var(--navy-dark);}
+  .entrega-fecha{font-size:12px;color:var(--muted);}
+  .entrega-items{font-size:13px;color:var(--ink);margin-top:6px;line-height:1.5;}
+  .badge-pendiente{background:#FBEFD9;color:#8A5A0E;}
+  .badge-recibido{background:#E7F4EC;color:var(--green);}
+  .ticket-label{border:2px dashed var(--line-strong);border-radius:var(--radius-sm);padding:18px;margin-bottom:16px;}
+  .ticket-label .tl-codigo{font-family:'Space Grotesk';font-weight:700;font-size:22px;color:var(--navy-dark);letter-spacing:.03em;}
+  .ticket-label .tl-row{font-size:13.5px;margin-top:6px;color:var(--ink);}
+  .ticket-label .tl-row b{color:var(--muted);font-weight:600;}
+  .ticket-label .tl-items{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);}
+  .ticket-label .tl-item{font-size:13.5px;padding:3px 0;}
+  @media print{
+    body *{visibility:hidden;}
+    .ticket-label,.ticket-label *{visibility:visible;}
+    .ticket-label{position:absolute;top:0;left:0;width:100%;border:none;}
+  }
+
   /* ---------------- Panel de moderación ---------------- */
   .admin-row{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 14px;margin-bottom:10px;}
   .admin-row-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
@@ -337,6 +366,10 @@
       <button class="hbtn hbtn-ghost" id="openUpdate">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-2.6-6.4M21 4v5h-5"/></svg>
         Actualizar punto
+      </button>
+      <button class="hbtn hbtn-ghost" id="openTicket">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 000 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a2 2 0 000-4V9Z"/><path d="M9 7v12"/></svg>
+        Generar ticket de entrega
       </button>
     </div>
   </div>
@@ -568,6 +601,35 @@
       <div class="field"><label>Teléfono o WhatsApp de contacto</label><input id="u_contacto" type="tel" /></div>
       <button class="btn btn-primary panel-submit" id="savePunto">Guardar cambios</button>
       <div id="updMsg2"></div>
+      <div class="entregas-block">
+        <h3 class="entregas-title">Entregas recibidas</h3>
+        <p class="panel-sub" id="entregasCount"></p>
+        <div id="entregasList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TICKET DE ENTREGA ============ -->
+<div class="overlay" id="ticketOverlay" role="dialog" aria-modal="true" aria-labelledby="ticketTitle">
+  <div class="panel" style="max-width:640px;">
+    <div class="panel-head"><h2 id="ticketTitle">Generar ticket de entrega</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <div id="ticketStep1">
+      <p class="panel-sub">Elige el centro al que vas a llevar tu donación y detalla lo que entregas. Al final podrás imprimir una etiqueta para tu caja o bolsa.</p>
+      <div class="field"><label>Centro de acopio</label>
+        <select id="t_punto"><option value="">Selecciona un centro…</option></select>
+      </div>
+      <div class="field"><label>Tu nombre <span class="hint">(opcional)</span></label><input id="t_donante" type="text" placeholder="Para que el centro sepa quién entrega" /></div>
+      <div class="field"><label>¿Qué entregas?</label>
+        <div id="t_items"></div>
+      </div>
+      <button class="btn btn-primary panel-submit" id="t_submit">Generar ticket</button>
+      <div id="ticketMsg1"></div>
+    </div>
+    <div id="ticketStep2" style="display:none;">
+      <div class="ticket-label" id="ticketLabel"></div>
+      <button class="btn btn-primary panel-submit" id="t_print">Imprimir etiqueta</button>
+      <button class="btn panel-submit" id="t_nuevo" style="margin-top:8px;">Generar otro ticket</button>
     </div>
   </div>
 </div>
@@ -1045,6 +1107,7 @@ $('loadPunto').addEventListener('click', async () => {
   const p = data[0];
   $('u_estado').value = p.estado || 'recibiendo'; $('u_necesidades').value = p.necesidades || ''; $('u_horario').value = p.horario || ''; $('u_contacto').value = p.contacto || '';
   $('updStep1').style.display='none'; $('updStep2').style.display='block'; $('savePunto').dataset.token = token;
+  cargarEntregas(token);
 });
 $('savePunto').addEventListener('click', async () => {
   const token = $('savePunto').dataset.token;
@@ -1055,6 +1118,140 @@ $('savePunto').addEventListener('click', async () => {
   if(error || data===false){ $('updMsg2').innerHTML = `<div class="msg msg-err">No se pudo guardar. Vuelve a intentarlo.</div>`; return; }
   $('updMsg2').innerHTML = `<div class="msg msg-ok">Cambios guardados. Gracias por mantenerlo al día.</div>`;
   cargar(); setTimeout(()=>closeOverlay($('updateOverlay')), 1200);
+});
+
+/* ---------- Ticket de entrega ---------- */
+const ITEM_CATEGORIAS = [
+  {key:'alimentos', label:'Alimentos no perecederos'},
+  {key:'agua', label:'Agua embotellada'},
+  {key:'higiene', label:'Higiene personal'},
+  {key:'ropa', label:'Ropa'},
+  {key:'medicamentos', label:'Medicamentos / primeros auxilios'},
+  {key:'otros', label:'Otros'}
+];
+const UNIDADES = ['kg', 'unidades', 'cajas', 'bolsas'];
+
+function genCodigo(){ const a = new Uint8Array(6); crypto.getRandomValues(a); return 'DON-' + Array.from(a, b => b.toString(36)).join('').slice(0,8).toUpperCase(); }
+
+function itemRowsHTML(){
+  return ITEM_CATEGORIAS.map(c => `
+    <div class="item-row" data-cat="${c.key}">
+      <div class="item-row-head">
+        <label><input type="checkbox" class="t_cat_chk" /> ${esc(c.label)}</label>
+      </div>
+      <div class="item-row-fields">
+        <div class="field"><label>Cantidad</label><input type="number" min="0" step="0.1" class="t_cat_cant" /></div>
+        <div class="field"><label>Unidad</label><select class="t_cat_unidad">${UNIDADES.map(u => `<option value="${u}">${u}</option>`).join('')}</select></div>
+        <div class="field full"><label>Detalle <span class="hint">(opcional)</span></label><input type="text" class="t_cat_detalle" placeholder="p.ej. pañales talla 3" /></div>
+      </div>
+    </div>`).join('');
+}
+
+function poblarSelectorPuntos(){
+  const sel = $('t_punto');
+  sel.innerHTML = '<option value="">Selecciona un centro…</option>' +
+    PUNTOS.map(p => `<option value="${p.id}">${esc(p.nombre)}${p.ciudad ? ' — ' + esc(p.ciudad) : ''}</option>`).join('');
+}
+
+$('openTicket').addEventListener('click', () => {
+  $('t_items').innerHTML = itemRowsHTML();
+  poblarSelectorPuntos();
+  $('t_donante').value = '';
+  $('ticketMsg1').innerHTML = '';
+  $('ticketStep1').style.display = 'block'; $('ticketStep2').style.display = 'none';
+  openOverlay('ticketOverlay');
+});
+
+$('t_items').addEventListener('change', (e) => {
+  if(!e.target.classList.contains('t_cat_chk')) return;
+  const fields = e.target.closest('.item-row').querySelector('.item-row-fields');
+  fields.classList.toggle('open', e.target.checked);
+});
+
+function ticketLabelHTML(entrega, puntoNombre){
+  const fecha = new Date(entrega.created_at || Date.now()).toLocaleString('es-ES', {dateStyle:'medium', timeStyle:'short'});
+  const items = entrega.items.map(it => {
+    const cat = ITEM_CATEGORIAS.find(c => c.key === it.categoria);
+    const cant = it.cantidad ? `${it.cantidad} ${it.unidad}` : '';
+    return `<div class="tl-item">• ${esc(cat ? cat.label : it.categoria)}${cant ? ' — ' + esc(cant) : ''}${it.detalle ? ' (' + esc(it.detalle) + ')' : ''}</div>`;
+  }).join('');
+  return `
+    <div class="tl-codigo">${esc(entrega.codigo)}</div>
+    <div class="tl-row"><b>Centro:</b> ${esc(puntoNombre)}</div>
+    <div class="tl-row"><b>Fecha:</b> ${esc(fecha)}</div>
+    ${entrega.donante_nombre ? `<div class="tl-row"><b>Entrega:</b> ${esc(entrega.donante_nombre)}</div>` : ''}
+    <div class="tl-items">${items}</div>`;
+}
+
+$('t_submit').addEventListener('click', async () => {
+  const puntoId = $('t_punto').value;
+  if(!puntoId){ $('ticketMsg1').innerHTML = `<div class="msg msg-err">Selecciona un centro de acopio.</div>`; return; }
+  if(!CONFIGURED){ $('ticketMsg1').innerHTML = `<div class="msg msg-err">Conecta Supabase primero.</div>`; return; }
+  const items = [];
+  $('t_items').querySelectorAll('.item-row').forEach(row => {
+    if(!row.querySelector('.t_cat_chk').checked) return;
+    items.push({
+      categoria: row.dataset.cat,
+      cantidad: row.querySelector('.t_cat_cant').value ? Number(row.querySelector('.t_cat_cant').value) : null,
+      unidad: row.querySelector('.t_cat_unidad').value,
+      detalle: row.querySelector('.t_cat_detalle').value.trim() || null
+    });
+  });
+  if(!items.length){ $('ticketMsg1').innerHTML = `<div class="msg msg-err">Marca al menos un tipo de donativo.</div>`; return; }
+  const btn = $('t_submit'); btn.disabled = true; btn.textContent = 'Generando…';
+  const row = {punto_id: puntoId, codigo: genCodigo(), donante_nombre: $('t_donante').value.trim() || null, items, estado: 'pendiente'};
+  const { data, error } = await sb.from('entregas').insert(row).select().single();
+  btn.disabled = false; btn.textContent = 'Generar ticket';
+  if(error){ console.error(error); $('ticketMsg1').innerHTML = `<div class="msg msg-err">No se pudo generar el ticket. Revisa las políticas RLS.</div>`; return; }
+  const punto = PUNTOS.find(p => p.id === puntoId);
+  $('ticketLabel').innerHTML = ticketLabelHTML(data, punto ? punto.nombre : '');
+  $('ticketStep1').style.display = 'none'; $('ticketStep2').style.display = 'block';
+});
+$('t_print').addEventListener('click', () => window.print());
+$('t_nuevo').addEventListener('click', () => {
+  $('t_items').innerHTML = itemRowsHTML();
+  $('t_donante').value = ''; $('ticketMsg1').innerHTML = '';
+  $('ticketStep1').style.display = 'block'; $('ticketStep2').style.display = 'none';
+});
+
+/* ---------- Entregas (vista del centro) ---------- */
+function entregaRowHTML(e){
+  const fecha = new Date(e.created_at).toLocaleString('es-ES', {dateStyle:'medium', timeStyle:'short'});
+  const itemsTxt = e.items.map(it => {
+    const cat = ITEM_CATEGORIAS.find(c => c.key === it.categoria);
+    const cant = it.cantidad ? `${it.cantidad} ${it.unidad}` : '';
+    return `${cat ? cat.label : it.categoria}${cant ? ' (' + cant + ')' : ''}`;
+  }).join(', ');
+  return `
+  <div class="entrega-row" data-id="${e.id}">
+    <div class="entrega-row-head">
+      <div>
+        <span class="entrega-codigo">${esc(e.codigo)}</span>
+        <div class="entrega-fecha">${esc(fecha)}${e.donante_nombre ? ' · ' + esc(e.donante_nombre) : ''}</div>
+      </div>
+      <span class="badge ${e.estado === 'recibido' ? 'badge-recibido' : 'badge-pendiente'}">${e.estado === 'recibido' ? 'Recibido' : 'Pendiente'}</span>
+    </div>
+    <div class="entrega-items">${esc(itemsTxt)}</div>
+    ${e.estado !== 'recibido' ? `<button type="button" class="btn-mini entrega-confirmar" style="margin-top:9px;">Marcar recibido</button>` : ''}
+  </div>`;
+}
+
+async function cargarEntregas(token){
+  const { data, error } = await sb.rpc('listar_entregas_punto', {p_edit_token: token});
+  if(error){ $('entregasCount').textContent = ''; $('entregasList').innerHTML = ''; return; }
+  const entregas = data || [];
+  $('entregasCount').textContent = entregas.length ? `${entregas.length} ${entregas.length===1?'entrega registrada':'entregas registradas'}` : 'Aún no hay entregas registradas.';
+  $('entregasList').innerHTML = entregas.map(entregaRowHTML).join('');
+}
+
+$('entregasList').addEventListener('click', async (e) => {
+  if(!e.target.classList.contains('entrega-confirmar')) return;
+  const row = e.target.closest('.entrega-row');
+  const token = $('savePunto').dataset.token;
+  e.target.disabled = true; e.target.textContent = 'Guardando…';
+  const { error } = await sb.rpc('confirmar_entrega', {p_edit_token: token, p_id: row.dataset.id});
+  if(error){ e.target.disabled = false; e.target.textContent = 'Marcar recibido'; return; }
+  cargarEntregas(token);
 });
 
 /* ---------- Panel de moderación ---------- */
