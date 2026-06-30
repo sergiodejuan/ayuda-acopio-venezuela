@@ -73,6 +73,11 @@
   .appbar.solid .hbtn-official{background:var(--surface);border-color:var(--line-strong);color:var(--navy);}
   .hbtn-official:hover{background:rgba(255,255,255,.22);}
   .appbar.solid .hbtn-official:hover{background:var(--amber-soft);}
+  .hbtn-burger{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(255,255,255,.12);color:inherit;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:0;}
+  .hbtn-burger svg{width:18px;height:18px;}
+  .appbar.solid .hbtn-burger{background:var(--surface);border-color:var(--line-strong);color:var(--navy);}
+  .hbtn-burger:hover{background:rgba(255,255,255,.22);}
+  .appbar.solid .hbtn-burger:hover{background:var(--amber-soft);}
   @media(max-width:480px){
     .appbar .inner{padding:11px 14px;gap:8px;}
     .brand-sub{display:none;}
@@ -81,6 +86,28 @@
     .share-top,.hbtn-official{padding:9px 10px;gap:0;}
     .share-top svg,.hbtn-official svg{width:16px;height:16px;}
   }
+
+  /* Menú burger */
+  .menu-list{display:flex;flex-direction:column;gap:10px;margin-top:6px;}
+  .menu-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 15px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;}
+  .menu-item:hover{background:var(--amber-soft);}
+  .menu-item svg{flex:0 0 auto;width:20px;height:20px;color:var(--navy);}
+  .menu-item-text{display:flex;flex-direction:column;gap:2px;}
+  .menu-item-text strong{font-size:14.5px;}
+  .menu-item-text span{font-size:12.5px;color:var(--muted);}
+
+  /* Tutorial */
+  .tut-section{margin-top:18px;}
+  .tut-section h3{font-family:'Inter',system-ui,sans-serif;font-size:14.5px;font-weight:700;margin:0 0 10px;color:var(--ink);}
+  .tut-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:tutstep;}
+  .tut-steps li{counter-increment:tutstep;display:flex;gap:11px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;font-size:13.5px;color:var(--muted);line-height:1.5;}
+  .tut-steps li::before{content:counter(tutstep);flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+  /* Legal */
+  .legal-doc{display:flex;flex-direction:column;gap:12px;margin-top:6px;}
+  .legal-doc h3{font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:700;margin:14px 0 2px;color:var(--ink);}
+  .legal-doc h3:first-child{margin-top:0;}
+  .legal-doc p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.55;}
 
   /* Modal de canales oficiales */
   .official-list{display:flex;flex-direction:column;gap:12px;margin-top:6px;}
@@ -356,6 +383,9 @@
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.69-6.16a11.87 11.87 0 01-1.6-5.95C.16 5.34 5.5 0 12.06 0a11.8 11.8 0 018.4 3.49 11.78 11.78 0 013.48 8.4c0 6.55-5.34 11.89-11.9 11.89a11.9 11.9 0 01-5.68-1.45L.06 24zm6.6-3.8c1.68.99 3.28 1.59 5.4 1.59 5.45 0 9.9-4.43 9.9-9.89A9.86 9.86 0 0012.06 2 9.9 9.9 0 002.16 11.9c0 2.22.65 3.88 1.74 5.62l-1 3.66 3.76-.98z"/></svg>
         <span>Compartir esta lista</span>
       </a>
+      <button class="hbtn-burger" id="openMenu" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="menuOverlay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
   </div>
 </div>
@@ -584,6 +614,99 @@
       </div>
     </div>
     <p class="official-note">Datos de contacto recopilados de fuentes oficiales (Ministerio de Asuntos Exteriores, embajadas, Cruz Roja y AECID). Verifica siempre la información directamente en sus canales oficiales antes de actuar, ya que horarios y números pueden cambiar.</p>
+  </div>
+</div>
+
+<!-- ============ MENÚ ============ -->
+<div class="overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+  <div class="panel">
+    <div class="panel-head"><h2 id="menuTitle">Menú</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <div class="menu-list">
+      <button type="button" class="menu-item" id="menuOfficial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L3 7v2c0 6 4 9 9 13 5-4 9-7 9-13V7l-9-5Z"/><path d="M9 12l2 2 4-4"/></svg>
+        <span class="menu-item-text"><strong>Fuentes y canales oficiales</strong><span>Emergencias, embajadas, Cruz Roja, AECID</span></span>
+      </button>
+      <button type="button" class="menu-item" id="menuTutorial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2.5 1.5-2.5 3.5"/><path d="M12 17h.01"/></svg>
+        <span class="menu-item-text"><strong>Cómo funciona</strong><span>Guía paso a paso para donantes y centros</span></span>
+      </button>
+      <button type="button" class="menu-item" id="menuLegal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M6 6h12M5 10h2l2.5 5.5L12 10M17 10h2l2.5 5.5L22 10"/></svg>
+        <span class="menu-item-text"><strong>Aviso legal y responsabilidad</strong><span>Iniciativa ciudadana, sin ánimo de lucro</span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TUTORIAL ============ -->
+<div class="overlay" id="tutorialOverlay" role="dialog" aria-modal="true" aria-labelledby="tutTitle">
+  <div class="panel">
+    <div class="panel-head"><h2 id="tutTitle">Cómo funciona</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <p class="panel-sub">Una guía rápida, paso a paso, tanto si quieres donar como si gestionas un punto de acopio.</p>
+
+    <div class="tut-section">
+      <h3>Para personas donantes</h3>
+      <ol class="tut-steps">
+        <li>Busca un punto de acopio cercano por ciudad, provincia o usando «Cerca de mí».</li>
+        <li>Revisa su estado («Recibiendo», «Completo» o «Pausado») y qué necesita en este momento.</li>
+        <li>Confirma siempre antes por teléfono o WhatsApp que el punto sigue activo y qué admite.</li>
+        <li>En la tarjeta del centro, pulsa «Donar a este centro» y marca lo que vas a llevar.</li>
+        <li>Genera el ticket de entrega: es una etiqueta para identificar tu donación, no un comprobante legal.</li>
+        <li>Imprime o muestra el ticket y entrégalo junto con tu donación en el punto de acopio.</li>
+        <li>El centro marcará la entrega como recibida cuando la reciba.</li>
+      </ol>
+    </div>
+
+    <div class="tut-section">
+      <h3>Para puntos de acopio / centros</h3>
+      <ol class="tut-steps">
+        <li>Pulsa «Registrar punto» y rellena los datos de tu centro (dirección, horario, contacto).</li>
+        <li>Guarda bien el código de gestión que se genera: es la única forma de editar tu punto después.</li>
+        <li>Usa «Actualizar punto» con tu código para cambiar el estado, las necesidades o el horario en cualquier momento.</li>
+        <li>Desde «Actualizar punto» puedes ver el listado de «Entregas recibidas» con los tickets generados por donantes.</li>
+        <li>Marca cada entrega como «Recibida» cuando llegue físicamente a tu centro.</li>
+        <li>Exporta el histórico completo o por día en Excel para llevar el control de stock y gestión.</li>
+        <li>Mantén tu punto actualizado: una información correcta evita desplazamientos innecesarios a los donantes.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AVISO LEGAL ============ -->
+<div class="overlay" id="legalOverlay" role="dialog" aria-modal="true" aria-labelledby="legalTitle">
+  <div class="panel">
+    <div class="panel-head"><h2 id="legalTitle">Aviso legal y descargo de responsabilidad</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <div class="legal-doc">
+      <h3>1. Naturaleza del proyecto</h3>
+      <p>«Ayuda acopio Venezuela» es una iniciativa ciudadana, voluntaria, gratuita y sin ánimo de lucro, creada y mantenida de forma independiente para facilitar la coordinación de ayuda humanitaria tras los terremotos de Venezuela de junio de 2026. No tiene afiliación oficial con ninguna institución pública, ONG, administración, embajada ni organismo internacional.</p>
+
+      <h3>2. Carácter informativo del directorio</h3>
+      <p>Esta web es únicamente un directorio informativo y colaborativo. Los datos de cada punto de acopio (dirección, horario, necesidades, estado) son aportados y mantenidos por las propias personas o entidades responsables de cada centro, y pueden contener errores, estar desactualizados o ser incorrectos. Recomendamos confirmar siempre por teléfono o WhatsApp antes de desplazarte o preparar una donación.</p>
+
+      <h3>3. Sin gestión de fondos ni donaciones económicas</h3>
+      <p>A través de esta plataforma no se recauda dinero, no se gestionan donaciones económicas ni se realiza intermediación financiera de ningún tipo. Únicamente se listan ubicaciones físicas de recogida de bienes materiales (alimentos, agua, ropa u otros artículos), gestionadas de forma autónoma por cada punto.</p>
+
+      <h3>4. No responsabilidad por la gestión de cada centro</h3>
+      <p>No nos hacemos responsables de la gestión interna, el destino final, el uso o la administración de las donaciones realizadas a cualquiera de los puntos de acopio listados. Cada centro es el único responsable de su propia actividad, de la veracidad de los datos que publica y del cumplimiento de la normativa que le sea aplicable. No verificamos la identidad legal ni la idoneidad de cada punto registrado, salvo aquellos marcados expresamente como «oficiales».</p>
+
+      <h3>5. Sobre el ticket de entrega</h3>
+      <p>El «ticket de entrega» generado en la web es una simple etiqueta identificativa pensada para facilitar la organización y el control de stock entre donantes y centros. No constituye un justificante fiscal, contable ni legal de ninguna donación, ni genera obligación o responsabilidad alguna para esta plataforma.</p>
+
+      <h3>6. Posibilidad de errores o usos indebidos</h3>
+      <p>Al tratarse de un directorio abierto y colaborativo, no podemos garantizar que todos los puntos registrados sean legítimos. Si detectas información falsa, fraudulenta o sospechosa, contáctanos para retirarla a la mayor brevedad. La plataforma se reserva el derecho de eliminar, sin previo aviso, cualquier punto cuya información se considere errónea, fraudulenta o inapropiada.</p>
+
+      <h3>7. Protección de datos</h3>
+      <p>Solo se almacenan los datos del establecimiento que cada punto decide publicar voluntariamente (nombre, dirección, contacto). No se recogen ni almacenan datos personales de las personas donantes. Para corregir o eliminar la información de un punto, usa la opción «Actualizar mi punto» con su código de gestión, o contacta con quien lo publicó.</p>
+
+      <h3>8. Limitación de responsabilidad</h3>
+      <p>En la medida permitida por la legislación española aplicable, la persona responsable de este proyecto no asume responsabilidad alguna por daños directos o indirectos derivados del uso de esta web, de la información publicada por terceros, o de las gestiones realizadas entre donantes y puntos de acopio. El uso de esta plataforma es voluntario y bajo la responsabilidad de cada persona usuaria.</p>
+
+      <h3>9. Contenido libre para fines humanitarios</h3>
+      <p>El contenido de este directorio puede compartirse y reutilizarse libremente con fines de ayuda humanitaria, citando su procedencia cuando sea posible.</p>
+
+      <h3>10. Contacto</h3>
+      <p>Para dudas, sugerencias, errores o solicitudes relacionadas con esta política, puedes escribir a través del enlace de contacto disponible en el pie de la web.</p>
+    </div>
   </div>
 </div>
 
@@ -1066,6 +1189,10 @@ $('r_materiales').addEventListener('click', (e) => {
 });
 $('openUpdate').addEventListener('click', () => { $('updStep1').style.display='block'; $('updStep2').style.display='none'; $('updMsg1').innerHTML=''; $('updMsg2').innerHTML=''; $('u_token').value=''; openOverlay('updateOverlay'); });
 $('openOfficial').addEventListener('click', () => openOverlay('officialOverlay'));
+$('openMenu').addEventListener('click', () => openOverlay('menuOverlay'));
+$('menuOfficial').addEventListener('click', () => { closeOverlay($('menuOverlay')); openOverlay('officialOverlay'); });
+$('menuTutorial').addEventListener('click', () => { closeOverlay($('menuOverlay')); openOverlay('tutorialOverlay'); });
+$('menuLegal').addEventListener('click', () => { closeOverlay($('menuOverlay')); openOverlay('legalOverlay'); });
 
 /* ---------- Contacto (ofuscado contra bots de spam) ---------- */
 $('contactEmail').addEventListener('click', () => {
