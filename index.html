@@ -367,6 +367,24 @@
   .admin-row-actions{display:flex;flex-wrap:wrap;gap:6px;}
   .btn-mini{font-size:12px;font-weight:600;padding:6px 10px;border-radius:7px;border:1px solid var(--line-strong);background:var(--surface);color:var(--navy);cursor:pointer;white-space:nowrap;}
   .btn-mini-danger{border-color:#E7B4AC;color:#B42318;}
+
+  /* Voluntariado: tabs + tarjetas */
+  .tab-bar{display:flex;gap:8px;border-bottom:1px solid var(--line);margin-top:4px;}
+  .tab-btn{flex:1;font-size:13.5px;font-weight:600;padding:11px 8px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;}
+  .tab-btn.active{color:var(--navy);border-bottom-color:var(--navy);}
+  .tab-panel[hidden]{display:none;}
+  .vol-card{border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 13px;margin-bottom:10px;}
+  .vol-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;}
+  .vol-card-title{font-weight:600;font-size:14px;color:var(--ink);}
+  .vol-card-meta{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.5;}
+  .vol-card-desc{font-size:13.5px;color:var(--ink);margin-top:8px;}
+  .vol-card-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;}
+  .vol-claim-form{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;}
+  .vol-claim-form .field{margin-bottom:8px;}
+  .vol-reveal{background:#EAF0F7;border-radius:8px;padding:9px 11px;margin-top:9px;font-size:13px;color:var(--navy-dark);line-height:1.55;}
+  .badge-asignado{background:#EAF0F7;color:var(--navy);}
+  .badge-completado{background:#E7F4EC;color:var(--green);}
+  .turnos-empty{font-size:13.5px;color:var(--faint);padding:14px 0;text-align:center;}
   .admin-edit-form{margin-top:13px;padding-top:13px;border-top:1px solid var(--line);}
 
   /* ---------------- Footer ---------------- */
@@ -656,6 +674,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.5-2.5 1.5-2.5 3.5"/><path d="M12 17h.01"/></svg>
         <span class="menu-item-text"><strong>Cómo funciona</strong><span>Guía paso a paso para donantes y centros</span></span>
       </button>
+      <button type="button" class="menu-item" id="menuVoluntariado">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M7 17V8a2 2 0 012-2h2l2 3h4a2 2 0 012 2v6"/><circle cx="8" cy="20" r="1.6"/><circle cx="17" cy="20" r="1.6"/></svg>
+        <span class="menu-item-text"><strong>Voluntariado</strong><span>Solicita transporte o apúntate a un turno</span></span>
+      </button>
       <button type="button" class="menu-item" id="menuLegal">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M6 6h12M5 10h2l2.5 5.5L12 10M17 10h2l2.5 5.5L22 10"/></svg>
         <span class="menu-item-text"><strong>Aviso legal y responsabilidad</strong><span>Iniciativa ciudadana, sin ánimo de lucro</span></span>
@@ -737,6 +759,61 @@
   </div>
 </div>
 
+<!-- ============ VOLUNTARIADO ============ -->
+<div class="overlay" id="voluntariadoOverlay" role="dialog" aria-modal="true" aria-labelledby="volTitle">
+  <div class="panel">
+    <div class="panel-head"><h2 id="volTitle">Voluntariado</h2><button class="panel-close" data-close aria-label="Cerrar">&times;</button></div>
+    <p class="panel-sub">Si no tienes coche, pide que alguien recoja tu donación. Si quieres echar una mano físicamente en un centro, apúntate a un turno.</p>
+
+    <div class="tab-bar" id="volTabs" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="transporte" role="tab" aria-selected="true">Transporte</button>
+      <button type="button" class="tab-btn" data-tab="turnos" role="tab" aria-selected="false">Turnos físicos</button>
+    </div>
+
+    <!-- TAB TRANSPORTE -->
+    <div class="tab-panel" id="volTabTransporte">
+      <div class="panel-section" style="margin-top:18px;padding-top:0;border-top:none;">
+        <h3 class="panel-section-title">Pide que recojan tu donación</h3>
+        <div class="field"><label>Tu nombre <span class="field-req">*</span></label><input id="tr_nombre" type="text" placeholder="Nombre y apellido" /></div>
+        <div class="field"><label>Teléfono o WhatsApp <span class="field-req">*</span></label><input id="tr_contacto" type="tel" placeholder="+34 600 000 000" /></div>
+        <div class="field"><label>Dirección de recogida <span class="field-req">*</span> <span class="hint">(solo la verá quien se ofrezca a recogerlo)</span></label><input id="tr_direccion" type="text" placeholder="Calle, número, piso" /></div>
+        <div class="field" style="display:flex;gap:10px;">
+          <div style="flex:1;"><label>Ciudad <span class="field-req">*</span></label><input id="tr_ciudad" type="text" placeholder="Ej. Madrid" /></div>
+          <div style="flex:1;"><label>Provincia</label><input id="tr_provincia" type="text" placeholder="Ej. Madrid" /></div>
+        </div>
+        <div class="field"><label>¿Qué hay que recoger? <span class="field-req">*</span></label><textarea id="tr_descripcion" placeholder="Ej. 3 cajas de ropa y 2 bolsas de alimentos"></textarea></div>
+        <div class="field"><label>Volumen aproximado</label>
+          <select id="tr_tamano">
+            <option value="">Sin especificar</option>
+            <option value="Caja pequeña">Caja pequeña</option>
+            <option value="Varias cajas o bolsas">Varias cajas o bolsas</option>
+            <option value="Mueble o carga grande">Mueble o carga grande</option>
+          </select>
+        </div>
+        <div class="field"><label>Punto de acopio de destino <span class="hint">(opcional)</span></label>
+          <select id="tr_destino"><option value="">Sin especificar / a coordinar</option></select>
+        </div>
+        <button class="btn btn-primary panel-submit" id="submitTransporte">Solicitar recogida</button>
+        <div id="trMsg"></div>
+      </div>
+      <div class="panel-section">
+        <h3 class="panel-section-title">Solicitudes pendientes</h3>
+        <p class="entregas-summary" id="transporteCount"></p>
+        <div id="transporteList"></div>
+      </div>
+    </div>
+
+    <!-- TAB TURNOS -->
+    <div class="tab-panel" id="volTabTurnos" hidden>
+      <div class="panel-section" style="margin-top:18px;padding-top:0;border-top:none;">
+        <h3 class="panel-section-title">Próximos turnos disponibles</h3>
+        <p class="entregas-summary" id="turnosCount"></p>
+        <div id="turnosList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ ACTUALIZAR ============ -->
 <div class="overlay" id="updateOverlay" role="dialog" aria-modal="true" aria-labelledby="updTitle">
   <div class="panel">
@@ -777,6 +854,28 @@
         </div>
         <div id="exportMsg"></div>
         <div id="entregasList"></div>
+      </div>
+      <div class="panel-section">
+        <h3 class="panel-section-title">Turnos de voluntariado</h3>
+        <p class="hint" style="margin:0 0 14px;">Publica huecos para que voluntarios se apunten a tareas físicas (carga, descarga, clasificación) en tu centro.</p>
+        <div class="field"><label>Fecha</label><input id="tu_fecha" type="date" /></div>
+        <div class="field" style="display:flex;gap:10px;">
+          <div style="flex:1;"><label>Hora inicio</label><input id="tu_hora_inicio" type="time" /></div>
+          <div style="flex:1;"><label>Hora fin</label><input id="tu_hora_fin" type="time" /></div>
+        </div>
+        <div class="field"><label>Tipo de tarea</label>
+          <select id="tu_tipo">
+            <option value="carga">Carga</option>
+            <option value="descarga">Descarga</option>
+            <option value="clasificacion">Clasificación</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Plazas</label><input id="tu_plazas" type="number" min="1" step="1" value="1" /></div>
+        <div class="field"><label>Notas <span class="hint">(opcional)</span></label><input id="tu_notas" type="text" placeholder="Ej. traer guantes, ropa cómoda…" /></div>
+        <button class="btn btn-primary panel-submit" id="crearTurno">Publicar turno</button>
+        <div id="turnoMsg"></div>
+        <div id="turnosPuntoList" style="margin-top:16px;"></div>
       </div>
     </div>
   </div>
@@ -1328,6 +1427,7 @@ $('loadPunto').addEventListener('click', async () => {
   $('u_estado').value = p.estado || 'recibiendo'; $('u_necesidades').value = p.necesidades || ''; $('u_horario').value = p.horario || ''; $('u_contacto').value = p.contacto || '';
   $('updStep1').style.display='none'; $('updStep2').style.display='block'; $('savePunto').dataset.token = token;
   cargarEntregas(token);
+  cargarTurnosPunto(token);
 });
 $('savePunto').addEventListener('click', async () => {
   const token = $('savePunto').dataset.token;
@@ -1705,6 +1805,261 @@ $('entregasList').addEventListener('click', async (e) => {
   if(error){ e.target.disabled = false; e.target.textContent = 'Marcar recibido'; return; }
   $('confirmMsg').innerHTML = `<div class="msg msg-ok">Entrega ${esc(data.codigo)} confirmada. Se avisará al donante.</div>`;
   cargarEntregas(token);
+});
+
+/* ---------- Voluntariado: transporte + turnos ---------- */
+$('menuVoluntariado').addEventListener('click', () => {
+  closeOverlay($('menuOverlay'));
+  openOverlay('voluntariadoOverlay');
+  poblarDestinoTransporte();
+  cargarTransporteSolicitudes();
+  cargarTurnosPublicos();
+});
+
+$('volTabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  $('volTabs').querySelectorAll('.tab-btn').forEach(b => { b.classList.toggle('active', b === btn); b.setAttribute('aria-selected', String(b === btn)); });
+  $('volTabTransporte').hidden = btn.dataset.tab !== 'transporte';
+  $('volTabTurnos').hidden = btn.dataset.tab !== 'turnos';
+});
+
+function poblarDestinoTransporte(){
+  const sel = $('tr_destino');
+  const actual = sel.value;
+  sel.innerHTML = '<option value="">Sin especificar / a coordinar</option>' + PUNTOS.map(p => `<option value="${esc(p.id)}">${esc(p.nombre)}${p.ciudad ? ' — ' + esc(p.ciudad) : ''}</option>`).join('');
+  sel.value = actual;
+}
+
+function timeAgoSimple(iso){
+  const h = (Date.now() - new Date(iso).getTime())/36e5;
+  if(h < 1) return 'hace minutos';
+  if(h < 24) return `hace ${Math.round(h)} h`;
+  const d = Math.round(h/24);
+  return `hace ${d} ${d===1?'día':'días'}`;
+}
+
+/* ---- Solicitar recogida ---- */
+$('submitTransporte').addEventListener('click', async () => {
+  const req = {tr_nombre:'nombre', tr_contacto:'teléfono', tr_direccion:'dirección', tr_ciudad:'ciudad', tr_descripcion:'qué hay que recoger'};
+  for(const id in req){ if(!$(id).value.trim()){ $(id).focus(); $('trMsg').innerHTML = `<div class="msg msg-err">Falta rellenar: ${req[id]}.</div>`; return; } }
+  if(!CONFIGURED){ $('trMsg').innerHTML = `<div class="msg msg-err">Conecta Supabase primero.</div>`; return; }
+  const btn = $('submitTransporte'); btn.disabled = true; btn.textContent = 'Enviando…';
+  const gestionToken = genToken();
+  const row = {
+    id: crypto.randomUUID(),
+    donante_nombre: $('tr_nombre').value.trim(),
+    donante_contacto: $('tr_contacto').value.trim(),
+    direccion: $('tr_direccion').value.trim(),
+    ciudad: $('tr_ciudad').value.trim(),
+    provincia: $('tr_provincia').value.trim() || null,
+    descripcion: $('tr_descripcion').value.trim(),
+    tamano: $('tr_tamano').value || null,
+    punto_destino_id: $('tr_destino').value || null,
+    estado: 'pendiente',
+    gestion_token: gestionToken
+  };
+  const { error } = await sb.from('solicitudes_transporte').insert(row);
+  btn.disabled = false; btn.textContent = 'Solicitar recogida';
+  if(error){ console.error(error); $('trMsg').innerHTML = `<div class="msg msg-err">No se pudo enviar la solicitud. Revisa las políticas RLS.</div>`; return; }
+  $('trMsg').innerHTML = `<div class="msg msg-ok">Solicitud enviada. En cuanto un voluntario con vehículo se ofrezca, te contactará al ${esc(row.donante_contacto)}.</div>`;
+  ['tr_nombre','tr_contacto','tr_direccion','tr_ciudad','tr_provincia','tr_descripcion'].forEach(id => $(id).value = '');
+  $('tr_tamano').value = ''; $('tr_destino').value = '';
+  cargarTransporteSolicitudes();
+});
+
+/* ---- Listar solicitudes pendientes / asignadas ---- */
+function transporteCardHTML(s){
+  const estadoBadgeHTML = s.estado === 'asignado'
+    ? `<span class="badge badge-asignado">Asignado</span>`
+    : `<span class="badge badge-pendiente">Pendiente</span>`;
+  return `
+  <div class="vol-card" data-id="${s.id}">
+    <div class="vol-card-head">
+      <div>
+        <div class="vol-card-title">${esc(s.ciudad)}${s.provincia ? ' (' + esc(s.provincia) + ')' : ''}</div>
+        <div class="vol-card-meta">${timeAgoSimple(s.created_at)}${s.tamano ? ' · ' + esc(s.tamano) : ''}${s.punto_destino_nombre ? ' · destino: ' + esc(s.punto_destino_nombre) : ''}</div>
+      </div>
+      ${estadoBadgeHTML}
+    </div>
+    <div class="vol-card-desc">${esc(s.descripcion)}</div>
+    ${s.estado === 'pendiente' ? `
+      <div class="vol-card-actions"><button type="button" class="btn-mini tr-ofrecer">Me ofrezco a recogerlo</button></div>
+      <div class="vol-claim-form" hidden>
+        <div class="field"><label>Tu nombre</label><input type="text" class="tr_v_nombre" /></div>
+        <div class="field"><label>Tu teléfono o WhatsApp</label><input type="tel" class="tr_v_contacto" /></div>
+        <button type="button" class="btn btn-primary panel-submit tr-confirmar-oferta">Confirmar y ver dirección</button>
+        <div class="tr-claim-msg"></div>
+      </div>` : `<p class="hint" style="margin-top:8px;">Ya hay un voluntario coordinando esta recogida.</p>`}
+  </div>`;
+}
+
+let TRANSPORTE_CACHE = [];
+
+async function cargarTransporteSolicitudes(){
+  if(!CONFIGURED){ $('transporteCount').textContent = ''; $('transporteList').innerHTML = ''; return; }
+  const { data, error } = await sb.from('solicitudes_transporte_publicas').select('*').order('created_at', {ascending:false});
+  if(error){ console.error(error); $('transporteList').innerHTML = `<div class="state"><h3>No se pudo cargar</h3><p>Revisa la conexión con Supabase.</p></div>`; return; }
+  TRANSPORTE_CACHE = data || [];
+  $('transporteCount').textContent = TRANSPORTE_CACHE.length ? `${TRANSPORTE_CACHE.length} ${TRANSPORTE_CACHE.length===1?'solicitud':'solicitudes'}` : 'No hay solicitudes pendientes ahora mismo.';
+  $('transporteList').innerHTML = TRANSPORTE_CACHE.length ? TRANSPORTE_CACHE.map(transporteCardHTML).join('') : '';
+}
+
+$('transporteList').addEventListener('click', async (e) => {
+  const ofrecerBtn = e.target.closest('.tr-ofrecer');
+  if(ofrecerBtn){
+    const card = ofrecerBtn.closest('.vol-card');
+    card.querySelector('.vol-claim-form').hidden = false;
+    ofrecerBtn.closest('.vol-card-actions').hidden = true;
+    return;
+  }
+  const confirmarBtn = e.target.closest('.tr-confirmar-oferta');
+  if(confirmarBtn){
+    const card = confirmarBtn.closest('.vol-card');
+    const form = card.querySelector('.vol-claim-form');
+    const nombre = form.querySelector('.tr_v_nombre').value.trim();
+    const contacto = form.querySelector('.tr_v_contacto').value.trim();
+    const msg = form.querySelector('.tr-claim-msg');
+    if(!nombre || !contacto){ msg.innerHTML = `<div class="msg msg-err">Indica tu nombre y un teléfono de contacto.</div>`; return; }
+    confirmarBtn.disabled = true; confirmarBtn.textContent = 'Confirmando…';
+    const { data, error } = await sb.rpc('reclamar_transporte', {p_id: card.dataset.id, p_voluntario_nombre: nombre, p_voluntario_contacto: contacto});
+    confirmarBtn.disabled = false; confirmarBtn.textContent = 'Confirmar y ver dirección';
+    if(error || !data){ msg.innerHTML = `<div class="msg msg-err">Esta solicitud ya no está disponible. Puede que otro voluntario se haya ofrecido antes.</div>`; cargarTransporteSolicitudes(); return; }
+    form.innerHTML = `
+      <div class="vol-reveal">
+        <b>Recoger en:</b> ${esc(data.direccion)}, ${esc(data.ciudad)}${data.provincia ? ' (' + esc(data.provincia) + ')' : ''}<br/>
+        <b>Donante:</b> ${esc(data.donante_nombre)} — ${esc(data.donante_contacto)}<br/>
+        <b>Qué recoger:</b> ${esc(data.descripcion)}
+      </div>
+      <button type="button" class="btn-mini tr-completar" data-claim="${esc(data.claim_token)}" style="margin-top:9px;">Marcar como recogido</button>
+      <div class="tr-completar-msg"></div>`;
+    return;
+  }
+  const completarBtn = e.target.closest('.tr-completar');
+  if(completarBtn){
+    completarBtn.disabled = true; completarBtn.textContent = 'Guardando…';
+    const { data, error } = await sb.rpc('completar_transporte', {p_claim_token: completarBtn.dataset.claim});
+    if(error || !data){ completarBtn.disabled = false; completarBtn.textContent = 'Marcar como recogido'; return; }
+    const msgEl = completarBtn.nextElementSibling;
+    if(msgEl) msgEl.innerHTML = `<div class="msg msg-ok">¡Gracias! Recogida marcada como completada.</div>`;
+    completarBtn.remove();
+    setTimeout(cargarTransporteSolicitudes, 1500);
+    return;
+  }
+});
+
+/* ---- Turnos: vista pública (apuntarse) ---- */
+const TIPO_TURNO_LABEL = {carga:'Carga', descarga:'Descarga', clasificacion:'Clasificación', otro:'Otro'};
+
+function turnoCardHTML(t){
+  const fecha = new Date(t.fecha + 'T00:00:00').toLocaleDateString('es-ES', {weekday:'short', day:'numeric', month:'short'});
+  return `
+  <div class="vol-card" data-id="${t.id}">
+    <div class="vol-card-head">
+      <div>
+        <div class="vol-card-title">${esc(fecha)} · ${t.hora_inicio.slice(0,5)}–${t.hora_fin.slice(0,5)}</div>
+        <div class="vol-card-meta">${esc(t.punto_nombre)}${t.ciudad ? ' — ' + esc(t.ciudad) : ''} · ${esc(TIPO_TURNO_LABEL[t.tipo] || t.tipo)}</div>
+      </div>
+      <span class="badge ${t.plazas_libres > 0 ? 'badge-recibido' : 'badge-pendiente'}">${t.plazas_libres > 0 ? t.plazas_libres + ' ' + (t.plazas_libres===1?'plaza libre':'plazas libres') : 'Completo'}</span>
+    </div>
+    ${t.notas ? `<div class="vol-card-desc">${esc(t.notas)}</div>` : ''}
+    ${t.plazas_libres > 0 ? `
+      <div class="vol-card-actions"><button type="button" class="btn-mini tu-apuntarme">Apuntarme</button></div>
+      <div class="vol-claim-form" hidden>
+        <div class="field"><label>Tu nombre</label><input type="text" class="tu_v_nombre" /></div>
+        <div class="field"><label>Tu teléfono o WhatsApp</label><input type="tel" class="tu_v_contacto" /></div>
+        <button type="button" class="btn btn-primary panel-submit tu-confirmar">Confirmar plaza</button>
+        <div class="tu-claim-msg"></div>
+      </div>` : ''}
+  </div>`;
+}
+
+async function cargarTurnosPublicos(){
+  if(!CONFIGURED){ $('turnosCount').textContent = ''; $('turnosList').innerHTML = ''; return; }
+  const { data, error } = await sb.from('turnos_publicos').select('*');
+  if(error){ console.error(error); $('turnosList').innerHTML = `<div class="state"><h3>No se pudo cargar</h3><p>Revisa la conexión con Supabase.</p></div>`; return; }
+  const turnos = data || [];
+  $('turnosCount').textContent = turnos.length ? `${turnos.length} ${turnos.length===1?'turno publicado':'turnos publicados'}` : 'Aún no hay turnos publicados.';
+  $('turnosList').innerHTML = turnos.length ? turnos.map(turnoCardHTML).join('') : `<p class="turnos-empty">Cuando un centro publique un turno, aparecerá aquí.</p>`;
+}
+
+$('turnosList').addEventListener('click', async (e) => {
+  const apuntarBtn = e.target.closest('.tu-apuntarme');
+  if(apuntarBtn){
+    const card = apuntarBtn.closest('.vol-card');
+    card.querySelector('.vol-claim-form').hidden = false;
+    apuntarBtn.closest('.vol-card-actions').hidden = true;
+    return;
+  }
+  const confirmarBtn = e.target.closest('.tu-confirmar');
+  if(confirmarBtn){
+    const card = confirmarBtn.closest('.vol-card');
+    const form = card.querySelector('.vol-claim-form');
+    const nombre = form.querySelector('.tu_v_nombre').value.trim();
+    const contacto = form.querySelector('.tu_v_contacto').value.trim();
+    const msg = form.querySelector('.tu-claim-msg');
+    if(!nombre || !contacto){ msg.innerHTML = `<div class="msg msg-err">Indica tu nombre y un teléfono de contacto.</div>`; return; }
+    confirmarBtn.disabled = true; confirmarBtn.textContent = 'Confirmando…';
+    const { error } = await sb.rpc('inscribirse_turno', {p_turno_id: card.dataset.id, p_nombre: nombre, p_contacto: contacto});
+    if(error){ msg.innerHTML = `<div class="msg msg-err">Ese turno ya está completo. Prueba con otro.</div>`; confirmarBtn.disabled = false; confirmarBtn.textContent = 'Confirmar plaza'; cargarTurnosPublicos(); return; }
+    msg.innerHTML = `<div class="msg msg-ok">¡Apuntado! Gracias por tu ayuda.</div>`;
+    setTimeout(cargarTurnosPublicos, 1200);
+    return;
+  }
+});
+
+/* ---- Turnos: gestión por el centro (panel "Actualizar mi punto") ---- */
+function turnoPuntoRowHTML(t){
+  const fecha = new Date(t.fecha + 'T00:00:00').toLocaleDateString('es-ES', {weekday:'short', day:'numeric', month:'short'});
+  const inscritos = t.inscritos || [];
+  return `
+  <div class="entrega-row" data-id="${t.id}">
+    <div class="entrega-row-head">
+      <div>
+        <span class="entrega-codigo">${esc(fecha)} · ${t.hora_inicio.slice(0,5)}–${t.hora_fin.slice(0,5)}</span>
+        <div class="entrega-fecha">${esc(TIPO_TURNO_LABEL[t.tipo] || t.tipo)} · ${inscritos.length}/${t.plazas} plazas ocupadas</div>
+      </div>
+      <button type="button" class="btn-mini btn-mini-danger turno-eliminar">Eliminar</button>
+    </div>
+    ${inscritos.length ? `<div class="entrega-items">${inscritos.map(i => `${esc(i.nombre)} (${esc(i.contacto)})`).join(' · ')}</div>` : `<div class="entrega-items">Nadie apuntado todavía.</div>`}
+  </div>`;
+}
+
+async function cargarTurnosPunto(token){
+  const { data, error } = await sb.rpc('listar_turnos_punto', {p_edit_token: token});
+  if(error){ $('turnosPuntoList').innerHTML = ''; return; }
+  const turnos = data || [];
+  $('turnosPuntoList').innerHTML = turnos.length
+    ? turnos.map(turnoPuntoRowHTML).join('')
+    : `<p class="entregas-empty">Aún no has publicado ningún turno.</p>`;
+}
+
+$('crearTurno').addEventListener('click', async () => {
+  const token = $('savePunto').dataset.token;
+  const req = {tu_fecha:'fecha', tu_hora_inicio:'hora de inicio', tu_hora_fin:'hora de fin'};
+  for(const id in req){ if(!$(id).value){ $('turnoMsg').innerHTML = `<div class="msg msg-err">Falta rellenar: ${req[id]}.</div>`; return; } }
+  const btn = $('crearTurno'); btn.disabled = true; btn.textContent = 'Publicando…';
+  const { error } = await sb.rpc('crear_turno', {
+    p_edit_token: token, p_fecha: $('tu_fecha').value, p_hora_inicio: $('tu_hora_inicio').value,
+    p_hora_fin: $('tu_hora_fin').value, p_tipo: $('tu_tipo').value, p_plazas: Number($('tu_plazas').value) || 1,
+    p_notas: $('tu_notas').value.trim()
+  });
+  btn.disabled = false; btn.textContent = 'Publicar turno';
+  if(error){ console.error(error); $('turnoMsg').innerHTML = `<div class="msg msg-err">No se pudo publicar el turno.</div>`; return; }
+  $('turnoMsg').innerHTML = `<div class="msg msg-ok">Turno publicado.</div>`;
+  $('tu_fecha').value=''; $('tu_hora_inicio').value=''; $('tu_hora_fin').value=''; $('tu_notas').value=''; $('tu_plazas').value='1';
+  cargarTurnosPunto(token);
+});
+
+$('turnosPuntoList').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.turno-eliminar');
+  if(!btn) return;
+  const token = $('savePunto').dataset.token;
+  const row = btn.closest('.entrega-row');
+  btn.disabled = true; btn.textContent = 'Eliminando…';
+  const { error } = await sb.rpc('eliminar_turno', {p_edit_token: token, p_turno_id: row.dataset.id});
+  if(error){ btn.disabled = false; btn.textContent = 'Eliminar'; return; }
+  cargarTurnosPunto(token);
 });
 
 /* ---------- Panel de moderación ---------- */
