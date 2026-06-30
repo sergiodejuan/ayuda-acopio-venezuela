@@ -344,8 +344,9 @@
   .thanks-details{width:100%;border:1px dashed var(--line-strong);border-radius:var(--radius-sm);padding:14px 16px;text-align:left;}
   @media print{
     body *{visibility:hidden;}
-    .ticket-label,.ticket-label *{visibility:visible;}
+    .ticket-label,.ticket-label *,.ticket-qr-wrap,.ticket-qr-wrap *{visibility:visible;}
     .ticket-label{position:absolute;top:0;left:0;width:100%;border:none;}
+    .ticket-qr-wrap{position:absolute;top:260px;left:0;width:100%;}
   }
 
   /* ---------------- Panel de moderación ---------------- */
@@ -1386,7 +1387,7 @@ $('list').addEventListener('click', async (e) => {
     const punto = PUNTOS.find(p => p.id === puntoId);
     $('ticketLabel').innerHTML = ticketLabelHTML(row, punto ? punto.nombre : '');
     CURRENT_TICKET = {entrega: row, puntoNombre: punto ? punto.nombre : ''};
-    QRCode.toCanvas($('ticketQR'), JSON.stringify({id: row.id, codigo: row.codigo}), {width: 200, margin: 1}, (err) => { if(err) console.error(err); });
+    renderTicketQR(row);
     msg.innerHTML = '';
     panel.querySelectorAll('.item-row').forEach(row => {
       row.querySelector('.t_cat_chk').checked = false;
@@ -1414,7 +1415,25 @@ let CURRENT_TICKET = null;
 
 $('t_print').addEventListener('click', () => window.print());
 
+function renderTicketQR(entrega){
+  const wrap = $('ticketQR').closest('.ticket-qr-wrap');
+  if(typeof QRCode === 'undefined'){
+    wrap.style.display = 'none';
+    return;
+  }
+  wrap.style.display = '';
+  try {
+    QRCode.toCanvas($('ticketQR'), JSON.stringify({id: entrega.id, codigo: entrega.codigo}), {width: 200, margin: 1}, (err) => {
+      if(err){ console.error(err); wrap.style.display = 'none'; }
+    });
+  } catch(err){
+    console.error(err);
+    wrap.style.display = 'none';
+  }
+}
+
 async function construirImagenTicket(entrega, puntoNombre){
+  if(typeof QRCode === 'undefined') throw new Error('QRCode no disponible');
   const qrDataUrl = await QRCode.toDataURL(JSON.stringify({id: entrega.id, codigo: entrega.codigo}), {width: 220, margin: 1});
   const qrImg = new Image();
   await new Promise((resolve, reject) => { qrImg.onload = resolve; qrImg.onerror = reject; qrImg.src = qrDataUrl; });
@@ -1460,6 +1479,7 @@ $('t_download').addEventListener('click', async () => {
     document.body.appendChild(a); a.click(); a.remove();
   } catch(err){
     console.error(err);
+    alert('No se pudo generar la imagen del ticket. Puedes usar «Imprimir etiqueta» en su lugar.');
   } finally {
     btn.disabled = false; btn.textContent = 'Descargar imagen del ticket';
   }
@@ -1521,6 +1541,10 @@ function scanTick(){
 async function startScan(){
   $('scanMsg').innerHTML = '';
   scanBusy = false;
+  if(typeof jsQR === 'undefined'){
+    $('scanMsg').innerHTML = `<div class="msg msg-err">No se pudo cargar el lector de QR. Comprueba tu conexión o desactiva el bloqueador de anuncios e inténtalo de nuevo.</div>`;
+    return;
+  }
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}});
   } catch(err){
