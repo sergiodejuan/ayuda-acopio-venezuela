@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
 <style>
   :root{
@@ -158,6 +159,19 @@
   .filter-chip.active .dot{background:var(--cream);}
   .filter-select{font-size:13.5px;font-weight:500;padding:7px 12px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);cursor:pointer;}
   .filter-reset{font-size:13px;font-weight:500;color:var(--navy);background:none;border:none;padding:7px 4px;cursor:pointer;text-decoration:underline;}
+  .filter-action{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;padding:7px 13px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--navy);cursor:pointer;white-space:nowrap;}
+  .filter-action svg{width:14px;height:14px;flex:0 0 auto;}
+  .filter-action.active{background:var(--navy);color:var(--cream);border-color:var(--navy);}
+  .filter-action[disabled]{opacity:.55;cursor:wait;}
+  .dist-badge{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--navy);white-space:nowrap;}
+  .dist-badge svg{width:13px;height:13px;}
+  #mapView{display:none;height:420px;border-radius:var(--radius);border:1px solid var(--line);margin:0 0 18px;overflow:hidden;}
+  #mapView.open{display:block;}
+  .map-pop{font-size:13.5px;}
+  .map-pop b{display:block;margin-bottom:3px;}
+  .map-pop a{color:var(--navy);font-weight:600;}
+  .map-loading{position:relative;}
+  .map-loading::after{content:"Ubicando puntos…";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(251,250,247,.85);font-size:13.5px;color:var(--muted);z-index:1000;}
 
   .config-warn{background:#FFF7E8;border:1px solid #F0DEC4;border-radius:var(--radius);padding:14px 16px;margin:0 0 18px;font-size:13.5px;color:#5C3A0E;max-width:640px;}
   .config-warn b{color:var(--amber);}
@@ -342,11 +356,20 @@
     <select class="filter-select" id="provinciaSelect" aria-label="Filtrar por provincia">
       <option value="">Todas las provincias</option>
     </select>
+    <button type="button" class="filter-action" id="nearMeBtn" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      Cerca de mí
+    </button>
+    <button type="button" class="filter-action" id="mapToggleBtn" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3Z"/><path d="M9 7v13M15 4v13"/></svg>
+      <span id="mapToggleLabel">Ver mapa</span>
+    </button>
     <button type="button" class="filter-reset" id="resetFilters" style="display:none;">Quitar filtros</button>
   </div>
   <div class="count" id="count"></div>
 
   <div id="configWarn"></div>
+  <div id="mapView"></div>
   <div class="list" id="list"></div>
 </main>
 
@@ -539,6 +562,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 /* ============================================================
    CONFIGURACIÓN  ·  rellena con tu proyecto de Supabase
@@ -556,6 +580,10 @@ let PUNTOS = [];
 let filtroEstado = null;
 let filtroProvincia = '';
 const ORDEN_ESTADO = {recibiendo:0, completo:1, pausado:2};
+let userLoc = null;
+let ordenDistancia = false;
+let mapaAbierto = false;
+let leafletMap = null, leafletMarkers = null;
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => (s == null ? '' : String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])));
@@ -573,6 +601,42 @@ function timeAgo(iso){
 function mapsLink(p){
   const q = [p.direccion, p.ciudad, p.provincia, 'España'].filter(Boolean).join(', ');
   return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+}
+
+/* ---------- Geocodificación (Nominatim/OSM) con caché local ---------- */
+function geoCacheKey(p){ return 'geo:' + norm([p.direccion, p.ciudad, p.provincia].filter(Boolean).join(', ')); }
+function geoFromCache(p){
+  try{ const v = localStorage.getItem(geoCacheKey(p)); return v ? JSON.parse(v) : null; }catch(e){ return null; }
+}
+function geoToCache(p, coords){ try{ localStorage.setItem(geoCacheKey(p), JSON.stringify(coords)); }catch(e){} }
+async function geocodePunto(p){
+  if(p.lat != null && p.lng != null) return {lat:+p.lat, lng:+p.lng};
+  const cached = geoFromCache(p);
+  if(cached) return cached;
+  const q = [p.direccion, p.ciudad, p.provincia, 'España'].filter(Boolean).join(', ');
+  try{
+    const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=es&q=' + encodeURIComponent(q));
+    const data = await res.json();
+    if(data && data[0]){
+      const coords = {lat:+data[0].lat, lng:+data[0].lon};
+      geoToCache(p, coords);
+      return coords;
+    }
+  }catch(e){ /* sin conexión a Nominatim: se omite este punto */ }
+  return null;
+}
+function haversineKm(a, b){
+  const R = 6371, toRad = (d) => d * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat), dLng = toRad(b.lng - a.lng);
+  const s = Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
+}
+async function geocodarTodos(puntos){
+  for(const p of puntos){
+    if(p._coords) continue;
+    p._coords = await geocodePunto(p);
+    await new Promise(r => setTimeout(r, 1050)); // respeta el límite de 1 req/s de Nominatim
+  }
 }
 function waSharePoint(p){
   const lineas = [
@@ -602,11 +666,14 @@ function cardHTML(p){
   const oficial = p.oficial
     ? `<span class="badge b-oficial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 6.6 7 .5-5.4 4.5 1.9 6.9L12 16.9 5.9 20.5l1.9-6.9-5.4-4.5 7-.5z"/></svg>Punto oficial</span>`
     : '';
+  const dist = (typeof p._dist === 'number')
+    ? `<span class="dist-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>${p._dist < 1 ? Math.round(p._dist*1000) + ' m' : p._dist.toFixed(1) + ' km'}</span>`
+    : '';
   return `
   <article class="card ${p.oficial ? 'card-oficial' : ''}">
     <div class="card-head">
       <h3 class="card-name">${esc(p.nombre)}</h3>
-      <div class="badges">${oficial}${estadoBadge(p.estado)}${verif}</div>
+      <div class="badges">${oficial}${estadoBadge(p.estado)}${verif}${dist}</div>
     </div>
     ${p.necesidades ? `<div class="needs"><div class="needs-label">Hace falta ahora</div><div class="needs-text">${esc(p.necesidades)}</div></div>` : ''}
     <div class="meta">
@@ -694,9 +761,91 @@ function aplicarFiltro(){
   if(filtroEstado) f = f.filter(p => p.estado === filtroEstado);
   if(filtroProvincia) f = f.filter(p => p.provincia === filtroProvincia);
   if(q) f = f.filter(p => norm([p.nombre,p.ciudad,p.provincia,p.necesidades,p.direccion].filter(Boolean).join(' ')).includes(q));
+  if(ordenDistancia && userLoc){
+    f = f.map(p => ({...p, _dist: p._coords ? haversineKm(userLoc, p._coords) : null}));
+    f = f.slice().sort((a,b) => {
+      if(a._dist == null && b._dist == null) return 0;
+      if(a._dist == null) return 1;
+      if(b._dist == null) return -1;
+      return a._dist - b._dist;
+    });
+  }
   actualizarResetVisible();
   render(f);
+  if(mapaAbierto) renderMapa(f);
 }
+
+/* ---------- Cerca de mí ---------- */
+function setNearMeLoading(on){
+  const btn = $('nearMeBtn');
+  btn.disabled = on;
+  btn.classList.toggle('active', ordenDistancia);
+}
+$('nearMeBtn').addEventListener('click', async () => {
+  if(ordenDistancia){
+    ordenDistancia = false; userLoc = null;
+    $('nearMeBtn').classList.remove('active'); $('nearMeBtn').setAttribute('aria-pressed','false');
+    PUNTOS.forEach(p => { delete p._dist; });
+    aplicarFiltro();
+    return;
+  }
+  if(!navigator.geolocation){ alert('Tu navegador no admite geolocalización.'); return; }
+  setNearMeLoading(true);
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    userLoc = {lat:pos.coords.latitude, lng:pos.coords.longitude};
+    await geocodarTodos(PUNTOS);
+    ordenDistancia = true;
+    $('nearMeBtn').classList.add('active'); $('nearMeBtn').setAttribute('aria-pressed','true');
+    setNearMeLoading(false);
+    aplicarFiltro();
+  }, (err) => {
+    setNearMeLoading(false);
+    alert('No se pudo obtener tu ubicación. Revisa los permisos de localización del navegador.');
+  }, {enableHighAccuracy:true, timeout:10000});
+});
+
+/* ---------- Mapa ---------- */
+function ensureMap(){
+  if(leafletMap) return;
+  leafletMap = L.map('mapView').setView([40.2, -3.7], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(leafletMap);
+  leafletMarkers = L.layerGroup().addTo(leafletMap);
+}
+async function renderMapa(items){
+  ensureMap();
+  const el = $('mapView');
+  el.classList.add('map-loading');
+  await geocodarTodos(items);
+  el.classList.remove('map-loading');
+  leafletMarkers.clearLayers();
+  const pts = [];
+  items.forEach(p => {
+    if(!p._coords) return;
+    pts.push([p._coords.lat, p._coords.lng]);
+    const marker = L.marker([p._coords.lat, p._coords.lng]).addTo(leafletMarkers);
+    marker.bindPopup(`<div class="map-pop"><b>${esc(p.nombre)}</b>${esc(p.direccion || '')}${p.ciudad ? ', ' + esc(p.ciudad) : ''}<br/><a href="${mapsLink(p)}" target="_blank" rel="noopener">Cómo llegar</a></div>`);
+  });
+  if(pts.length) leafletMap.fitBounds(pts, {padding:[24,24], maxZoom:14});
+  setTimeout(() => leafletMap.invalidateSize(), 50);
+}
+$('mapToggleBtn').addEventListener('click', () => {
+  mapaAbierto = !mapaAbierto;
+  $('mapView').classList.toggle('open', mapaAbierto);
+  $('mapToggleBtn').classList.toggle('active', mapaAbierto);
+  $('mapToggleBtn').setAttribute('aria-pressed', String(mapaAbierto));
+  $('mapToggleLabel').textContent = mapaAbierto ? 'Ver lista' : 'Ver mapa';
+  if(mapaAbierto){
+    const q = norm($('searchInput').value);
+    let f = PUNTOS;
+    if(filtroEstado) f = f.filter(p => p.estado === filtroEstado);
+    if(filtroProvincia) f = f.filter(p => p.provincia === filtroProvincia);
+    if(q) f = f.filter(p => norm([p.nombre,p.ciudad,p.provincia,p.necesidades,p.direccion].filter(Boolean).join(' ')).includes(q));
+    renderMapa(f);
+  }
+});
 
 /* ---------- Autocompletado ---------- */
 let SUG = [], sugActive = -1;
